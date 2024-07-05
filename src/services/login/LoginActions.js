@@ -21,8 +21,8 @@ export function loguser(username, password, setToken) {
           token: json.data.success.token,
           username: username,
         };
-        setToken(login.token);
         dispatch(loguserSuccess(login));
+        setToken(login.token);
         // dispatch(getPlaces());
         // dispatch(getRegimes());
         // dispatch(getOrder(customer, month, setCommandNb));
