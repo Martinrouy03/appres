@@ -187,6 +187,18 @@ export const computeMaxWeeks = (year, month, previousMonth) => {
         break;
       }
       maxWeeks--;
+      console.log(
+        new Date(
+          year,
+          month - 1,
+          lastDayfromPreviousMonth.getDate() - 7 * maxWeeks - weekDay + 1
+        ).toDateString(),
+        new Date(
+          year,
+          month - 1,
+          lastDayfromPreviousMonth.getDate() - 7 * maxWeeks + 7 - weekDay
+        ).toDateString()
+      );
     }
     maxWeeks++;
   } else {
@@ -200,6 +212,7 @@ export const computeMaxWeeks = (year, month, previousMonth) => {
       maxWeeks++;
     }
   }
+  maxWeeks--;
   return maxWeeks;
 };
 export const convertLinesToArray = (orderLines) => {
@@ -246,146 +259,6 @@ export const convertLinesToArray = (orderLines) => {
 
 export const convertToUnix = (date) => {
   return Math.floor(date.getTime() / 1000);
-};
-
-export const handleCheckBox = (shift, id, date) => {
-  const selectedDate = date;
-  selectedDate.setHours(0, 0, 0, 0);
-  selectedDate.setDate(selectedDate.getDate() + shift);
-  let selectedLines = [];
-  let count = 0;
-  selectedLines = order.lines.filter((line) => getMealCode(line.label) === id);
-
-  // ----- Mise à jour des lignes de commande ----- //
-  selectedLines.map((line) => {
-    const dateDebut = new Date( // Récupère date de début de ligne avant modification
-      moment.unix(line.array_options.options_lin_datedebut)
-    );
-    const dateFin = new Date( // Récupère date de fin de ligne avant modification
-      moment.unix(line.array_options.options_lin_datefin)
-    );
-    const { label, subprice, remise_percent, fk_product } = line;
-    let qty = Number(line.qty);
-
-    let {
-      options_lin_datedebut,
-      options_lin_datefin,
-      options_lin_room,
-      options_lin_intakeplace,
-    } = line.array_options;
-
-    let newLine = {
-      array_options: {
-        options_lin_room: options_lin_room,
-        options_lin_intakeplace: options_lin_intakeplace,
-        options_lin_datedebut: options_lin_datedebut,
-        options_lin_datefin: options_lin_datefin,
-      },
-      fk_product: fk_product,
-      label: label,
-      qty: line.qty,
-      subprice: subprice,
-      remise_percent: remise_percent,
-    };
-
-    // ----- SUPPRESSION de ligne de commande ---- //
-    if (
-      convertToUnix(selectedDate) === options_lin_datedebut &&
-      options_lin_datedebut === options_lin_datefin
-    ) {
-      dispatch(removeOrderLine(order.id, line.id));
-    } else if (
-      // ----- Mise à jour de ligne de commande ---- //
-      // Si l'utilisateur retire le premier repas de la ligne de commande
-      selectedDate.getTime() === dateDebut.getTime()
-    ) {
-      qty -= 1;
-      new Date(dateDebut.setDate(dateDebut.getDate() + 1));
-      options_lin_datedebut = convertToUnix(dateDebut);
-      newLine.array_options.options_lin_datedebut = options_lin_datedebut;
-      newLine.qty = String(qty);
-      dispatch(updateOrderLine(line.commande_id, line.id, newLine));
-    } else if (
-      // Si l'utilisateur retire le dernier repas de la ligne de commande
-      selectedDate.getTime() === dateFin.getTime()
-    ) {
-      qty -= 1;
-      new Date(dateFin.setDate(dateFin.getDate() - 1));
-      options_lin_datefin = convertToUnix(dateFin);
-      newLine.array_options.options_lin_datefin = options_lin_datefin;
-      newLine.qty = String(qty);
-      dispatch(updateOrderLine(line.commande_id, line.id, newLine));
-    } else if (
-      // Si l'utilisateur ajoute un repas la veille de la date de début
-      selectedDate.getTime() ===
-      dateDebut.getTime() - dayToMs
-    ) {
-      options_lin_datedebut = convertToUnix(selectedDate);
-      qty += 1;
-      newLine.array_options.options_lin_datedebut = options_lin_datedebut;
-      newLine.qty = String(qty);
-      dispatch(updateOrderLine(line.commande_id, line.id, newLine));
-    } else if (
-      // Si l'utilisateur ajoute un repas le lendemain de la date de fin
-      selectedDate.getTime() ===
-      dateFin.getTime() + dayToMs
-    ) {
-      let followingLine = selectedLines.filter(
-        (line) =>
-          line.array_options.options_lin_datedebut ===
-          convertToUnix(selectedDate) + 24 * 3600
-      );
-      followingLine = followingLine[0];
-      if (followingLine) {
-        const newLine = { ...line, array_options: { ...line.array_options } };
-        newLine.array_options.options_lin_datefin =
-          followingLine.array_options.options_lin_datefin;
-        const additionalDays =
-          (followingLine.array_options.options_lin_datefin -
-            convertToUnix(selectedDate)) /
-            (24 * 3600) +
-          1;
-        newLine.qty = String(Number(newLine.qty) + additionalDays);
-        // Extend the previous command line:
-        dispatch(updateOrderLine(line.commande_id, line.id, newLine));
-        // Delete the next command line:
-        dispatch(removeOrderLine(order.id, followingLine.id));
-      } else {
-        qty += 1;
-        options_lin_datefin = convertToUnix(selectedDate);
-        newLine.array_options.options_lin_datefin = options_lin_datefin;
-        newLine.qty = String(qty);
-        dispatch(updateOrderLine(line.commande_id, line.id, newLine));
-      }
-    } else if (
-      // Si l'utilisateur retire un repas au milieu d'une ligne de commande
-      convertToUnix(selectedDate) > options_lin_datedebut &&
-      convertToUnix(selectedDate) < options_lin_datefin
-    ) {
-      dispatch(orderBreakLine(order, line, convertToUnix(selectedDate)));
-    } else {
-      count++;
-    }
-  });
-
-  // ----- Création de ligne de commande ------ //
-  if (count === selectedLines.length || selectedLines.length === 0) {
-    dispatch(
-      addOrderLine(order, {
-        array_options: {
-          options_lin_room: "4",
-          options_lin_intakeplace: "dummy",
-          options_lin_datedebut: convertToUnix(selectedDate),
-          options_lin_datefin: convertToUnix(selectedDate),
-        },
-        fk_product: String(id + 1),
-        label: getMealLabel(id),
-        qty: "1",
-        subprice: getMealPrice(id),
-        remise_percent: 0,
-      })
-    );
-  }
 };
 
 // -----------------------------------------------//

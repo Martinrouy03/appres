@@ -2,7 +2,7 @@ import { convertDay } from "../utils/functions";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useSelector, shallowEqual, useDispatch } from "react-redux";
 import moment from "moment";
-import * as _ from "lodash";
+// import * as _ from "lodash";
 import {
   updateOrderLine,
   addOrderLine,
@@ -23,6 +23,10 @@ const Line = ({ id, date, week, month, place, meals, regimeId }) => {
   const disabledMeals =
     useSelector((state) => state.orderReducer.disabledMeals) || [];
   const order = useSelector((state) => state.orderReducer.order, shallowEqual);
+  const token = useSelector(
+    (state) => state.loginReducer.user.token,
+    shallowEqual
+  );
   const day = date.getDay() || 7;
   const mm = date.getMonth();
   const year = date.getFullYear();
@@ -48,7 +52,7 @@ const Line = ({ id, date, week, month, place, meals, regimeId }) => {
       shiftMin += tmp.getDate();
     }
   }
-  const handleCheckBox = (shift, id, date, place) => {
+  const handleCheckBox = (shift, id, date) => {
     const selectedDate = date;
     selectedDate.setHours(0, 0, 0, 0);
     selectedDate.setDate(selectedDate.getDate() + shift);
@@ -100,7 +104,8 @@ const Line = ({ id, date, week, month, place, meals, regimeId }) => {
             line.id,
             newLine,
             order.socid,
-            month
+            month,
+            token
           )
         );
       } else if (
@@ -120,7 +125,8 @@ const Line = ({ id, date, week, month, place, meals, regimeId }) => {
             line.id,
             newLine,
             order.socid,
-            month
+            month,
+            token
           )
         );
       } else if (
@@ -139,7 +145,8 @@ const Line = ({ id, date, week, month, place, meals, regimeId }) => {
             line.id,
             newLine,
             order.socid,
-            month
+            month,
+            token
           )
         );
       } else if (
@@ -176,7 +183,8 @@ const Line = ({ id, date, week, month, place, meals, regimeId }) => {
               line.id,
               newLine,
               order.socid,
-              month
+              month,
+              token
             )
           );
           // Delete the next command line:
@@ -195,7 +203,8 @@ const Line = ({ id, date, week, month, place, meals, regimeId }) => {
               line.id,
               newLine,
               order.socid,
-              month
+              month,
+              token
             )
           );
         }
@@ -231,6 +240,7 @@ const Line = ({ id, date, week, month, place, meals, regimeId }) => {
         })
       );
     }
+    // return "OK";
   };
 
   // -----------------------------------------------//
@@ -482,21 +492,21 @@ const Line = ({ id, date, week, month, place, meals, regimeId }) => {
       );
     } else {
       let accentColor = regimeColors[0].color;
-      let meal = "";
-      if (meals) {
-        meal = meals.filter(
-          (meal) =>
-            meal.startsWith(`m${id}_w${week}_d${i}`) &&
-            meal.endsWith(`p${place.rowid}`)
+      // let meal = "";
+      // if (meals) {
+      const meal = meals.filter(
+        (meal) =>
+          meal.startsWith(`m${id}_w${week}_d${i}`) &&
+          meal.endsWith(`p${place.rowid}`)
+      );
+      if (meal.length === 1) {
+        const color = regimeColors.filter(
+          (regimeColor) =>
+            regimeColor.rowid === String(meal[0][meal[0].indexOf("r") + 1])
         );
-        if (meal.length === 1) {
-          const color = regimeColors.filter(
-            (regimeColor) =>
-              regimeColor.rowid === String(meal[0][meal[0].indexOf("r") + 1])
-          );
-          accentColor = color[0].color;
-        }
+        accentColor = color[0].color;
       }
+      // }
 
       const disabledMeal = disabledMeals.includes(
         `m${id}_w${week}_d${i}_p${place.rowid}`

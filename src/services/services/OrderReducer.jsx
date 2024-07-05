@@ -57,15 +57,15 @@ export default function OrderReducer(state = initialState, action) {
       let orderLines = {};
       let result = [];
       let month = "";
-      if (Object.keys(action.payload.order).includes("lines")) {
-        orderLines = action.payload.order.lines;
-        result = convertLinesToArray(orderLines);
-        month = new Date(
-          moment.unix(
-            action.payload.order.lines[0].array_options.options_lin_datedebut
-          )
-        ).getMonth();
-      }
+      // if (Object.keys(action.payload.order).includes("lines")) {
+      orderLines = action.payload.order.lines;
+      result = convertLinesToArray(orderLines);
+      month = new Date(
+        moment.unix(
+          action.payload.order.lines[0].array_options.options_lin_datedebut
+        )
+      ).getMonth();
+      // }
 
       const meals = result.meals;
       const disabledMeals = result.disabledMeals;

@@ -1,19 +1,19 @@
 import { const_apiurl } from "../../Constant";
 import axios from "axios";
 import { store } from "../../app/App";
+// Actions
+// import { getOrder } from "../services/services/OrderActions";
+// import { getPlaces } from "../services/services/PlacesActions";
+// import { getRegimes } from "../services/services/RegimesActions";
+// import { customer } from "../../app/App";
 
-export function loguser(username, password) {
+export function loguser(username, password, setToken) {
   return (dispatch) => {
     console.log("loguser :  " + username);
     dispatch(loguserBegin());
 
     return axios
-      .post(const_apiurl + "login", {
-        login: username,
-        password: password,
-        entity: "",
-        reset: 1, // *** The token must be renew
-      })
+      .get(const_apiurl + "login?login=" + username + "&password=" + password)
       .then((json) => {
         console.log("loguserSucces : "); //+ JSON.stringify(json.data.success
         let login = {
@@ -21,8 +21,11 @@ export function loguser(username, password) {
           token: json.data.success.token,
           username: username,
         };
+        setToken(login.token);
         dispatch(loguserSuccess(login));
-
+        // dispatch(getPlaces());
+        // dispatch(getRegimes());
+        // dispatch(getOrder(customer, month, setCommandNb));
         /* update the status of the link with Dolibarr */
         // dispatch(getDolibarrStatus());
 

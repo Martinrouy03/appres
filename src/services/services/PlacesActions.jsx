@@ -1,10 +1,12 @@
 import { const_apiurl } from "../../Constant.js";
 import axios from "axios";
+import { useSelector } from "react-redux";
 
 // import { getUserToken } from "../login/LoginActions.js";
-import { token } from "../../app/App.jsx";
+// import { token } from "../../app/App.jsx";
 
-export function getPlaces() {
+export function getPlaces(token) {
+  // const token = useSelector((state) => state.loginReducer.user.token);
   return (dispatch) => {
     console.log("getPlacesBegin");
     dispatch(getPlacesBegin());

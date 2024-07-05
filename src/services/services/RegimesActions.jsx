@@ -2,9 +2,9 @@ import { const_apiurl } from "../../Constant.js";
 import axios from "axios";
 
 // import { getUserToken } from "../login/LoginActions.js";
-import { token } from "../../app/App.jsx";
+// import { token } from "../../app/App.jsx";
 
-export function getRegimes() {
+export function getRegimes(token) {
   return (dispatch) => {
     console.log("getRegimesBegin");
     dispatch(getRegimesBegin());

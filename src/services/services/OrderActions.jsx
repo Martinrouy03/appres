@@ -3,9 +3,9 @@ import axios from "axios";
 import moment from "moment";
 
 // import { getUserToken } from "../login/LoginActions.js";
-import { token } from "../../app/App.jsx";
+// import { token } from "../../app/App.jsx";
 
-export function getOrder(customerID, month, setCommandNb) {
+export function getOrder(customerID, month, setCommandNb, token) {
   return (dispatch) => {
     console.log("getOrderBegin : Customer " + customerID);
     dispatch(getOrderBegin());
@@ -35,14 +35,15 @@ export function getOrder(customerID, month, setCommandNb) {
               moment.unix(order.lines[0].array_options.options_lin_datedebut)
             ).getMonth() === month
         );
-        order[0]
-          ? dispatch(getOrderSuccess(order[0]))
-          : dispatch(getOrderSuccess([]));
+        // order[0] ?
+        dispatch(getOrderSuccess(order[0]));
+        // : dispatch(getOrderSuccess([]));
 
         // *** Reload the customer : if there were changes in the order, the copy of the order in the customer is updated. Usefull for function such as getMealforadate etc
       })
       .catch((error) => {
         console.log("getOrderFailure");
+        // console.log(error.response);
         // *** an 404 error is sent when Dolibarr didn't find invoices
         if (error.response) {
           // *** It's a Dolibarr error
@@ -86,7 +87,8 @@ export function updateOrderLine(
   orderLineId,
   orderLine,
   customerID,
-  month
+  month,
+  token
 ) {
   return (dispatch) => {
     console.log("updateOrderLineBegin : " + orderLineId);
@@ -104,7 +106,6 @@ export function updateOrderLine(
       )
       .then((json) => {
         console.log("updateOrderLineSuccess");
-        // dispatch(updateOrderLineSuccess(json.data));
         // *** Reload order
         dispatch(getOrder(customerID, month));
       })
@@ -156,7 +157,7 @@ export const updateOrderLineFailure = (error) => ({
 
 // ---------------- ADD ORDERLINE ----------------- //
 
-export function addOrderLine(order, month, orderline) {
+export function addOrderLine(order, month, orderline, token) {
   return (dispatch) => {
     console.log("addOrderLineBegin " + order.id);
 
@@ -283,7 +284,13 @@ export const addOrderLineFailure = (error) => ({
 
 // --------- DELETE ORDERLINE ----------- //
 
-export function removeOrderLine(orderId, orderLineid, customerID, month) {
+export function removeOrderLine(
+  orderId,
+  orderLineid,
+  customerID,
+  month,
+  token
+) {
   return (dispatch) => {
     console.log("removeOrderLineBegin : " + orderId + " -" + orderLineid);
 
@@ -441,7 +448,8 @@ export function updateOrderLineandAddOrderline(
   orderline,
   month,
   order,
-  addStruct
+  addStruct,
+  token
 ) {
   return (dispatch) => {
     console.log("updateOrderLineandAddOrderlineBegin " + orderLineid);
