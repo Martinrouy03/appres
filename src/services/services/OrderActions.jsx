@@ -35,7 +35,9 @@ export function getOrder(customerID, month, setCommandNb) {
               moment.unix(order.lines[0].array_options.options_lin_datedebut)
             ).getMonth() === month
         );
-        dispatch(getOrderSuccess(order[0]));
+        order[0]
+          ? dispatch(getOrderSuccess(order[0]))
+          : dispatch(getOrderSuccess([]));
 
         // *** Reload the customer : if there were changes in the order, the copy of the order in the customer is updated. Usefull for function such as getMealforadate etc
       })

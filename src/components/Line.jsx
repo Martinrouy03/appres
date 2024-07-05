@@ -20,9 +20,8 @@ import { regimeColors } from "../app/configuration";
 const dayToMs = 24 * 3600 * 1000;
 const Line = ({ id, date, week, month, place, meals, regimeId }) => {
   const dispatch = useDispatch();
-  const disabledMeals = useSelector(
-    (state) => state.orderReducer.disabledMeals
-  );
+  const disabledMeals =
+    useSelector((state) => state.orderReducer.disabledMeals) || [];
   const order = useSelector((state) => state.orderReducer.order, shallowEqual);
   const day = date.getDay() || 7;
   const mm = date.getMonth();
@@ -482,18 +481,21 @@ const Line = ({ id, date, week, month, place, meals, regimeId }) => {
         </div>
       );
     } else {
-      const meal = meals.filter(
-        (meal) =>
-          meal.startsWith(`m${id}_w${week}_d${i}`) &&
-          meal.endsWith(`p${place.rowid}`)
-      );
-      let accentColor = "";
-      if (meal.length === 1) {
-        const color = regimeColors.filter(
-          (regimeColor) =>
-            regimeColor.rowid === String(meal[0][meal[0].indexOf("r") + 1])
+      let accentColor = regimeColors[0].color;
+      let meal = "";
+      if (meals) {
+        meal = meals.filter(
+          (meal) =>
+            meal.startsWith(`m${id}_w${week}_d${i}`) &&
+            meal.endsWith(`p${place.rowid}`)
         );
-        accentColor = color[0].color;
+        if (meal.length === 1) {
+          const color = regimeColors.filter(
+            (regimeColor) =>
+              regimeColor.rowid === String(meal[0][meal[0].indexOf("r") + 1])
+          );
+          accentColor = color[0].color;
+        }
       }
 
       const disabledMeal = disabledMeals.includes(

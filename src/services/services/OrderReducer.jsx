@@ -54,15 +54,21 @@ export default function OrderReducer(state = initialState, action) {
       };
 
     case GET_ORDER_SUCCESS:
-      const orderLines = action.payload.order.lines;
-      const result = convertLinesToArray(orderLines);
+      let orderLines = {};
+      let result = [];
+      let month = "";
+      if (Object.keys(action.payload.order).includes("lines")) {
+        orderLines = action.payload.order.lines;
+        result = convertLinesToArray(orderLines);
+        month = new Date(
+          moment.unix(
+            action.payload.order.lines[0].array_options.options_lin_datedebut
+          )
+        ).getMonth();
+      }
+
       const meals = result.meals;
       const disabledMeals = result.disabledMeals;
-      const month = new Date(
-        moment.unix(
-          action.payload.order.lines[0].array_options.options_lin_datedebut
-        )
-      ).getMonth();
       return {
         ...state,
         loading: false,

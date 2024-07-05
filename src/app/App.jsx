@@ -130,7 +130,7 @@ function App() {
                   weeks = computeMaxWeeks(year, month, 1);
                   setRelWeek(1);
                 }
-                setWeek(week - weeks - relWeek + 1);
+                setWeek(week - weeks - relWeek); // +1
                 setMonth(month - 1);
               }}
               icon="fa-solid fa-chevron-left"
@@ -163,7 +163,15 @@ function App() {
                     ) {
                       w++;
                     }
-                    w--;
+                    console.log(
+                      new Date(
+                        year,
+                        m,
+                        7 * (w - 1) - weekDay + 1
+                      ).toDateString(),
+                      new Date(year, m, 7 * w - weekDay).toDateString()
+                    );
+                    // w--;
                   }
                   weeks = weeks + w;
                 }
@@ -258,20 +266,21 @@ function App() {
                     return (
                       <div key={id} className="line">
                         <div className="left-div">
-                          {order.lines && (
-                            <Line
-                              id={id}
-                              date={date}
-                              week={week}
-                              month={month}
-                              place={place}
-                              meals={meals}
-                              order={order}
-                              regimeId={regimeId}
-                            ></Line>
-                          )}
+                          {/* {order.lines && ( */}
+                          <Line
+                            id={id}
+                            date={date}
+                            week={week}
+                            month={month}
+                            place={place}
+                            meals={meals}
+                            // order={order}
+                            regimeId={regimeId}
+                          ></Line>
+                          {/* )} */}
                         </div>
-                        {filterMeals(meals, id, week, relWeek, firstDay, place)
+                        {meals &&
+                        filterMeals(meals, id, week, relWeek, firstDay, place)
                           .length === lengthMax ? (
                           <FontAwesomeIcon
                             icon="fa-regular fa-circle-xmark"
