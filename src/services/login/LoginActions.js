@@ -1,13 +1,8 @@
 import { const_apiurl } from "../../Constant";
 import axios from "axios";
 import { store } from "../../app/App";
-// Actions
-// import { getOrder } from "../services/services/OrderActions";
-// import { getPlaces } from "../services/services/PlacesActions";
-// import { getRegimes } from "../services/services/RegimesActions";
-// import { customer } from "../../app/App";
 
-export function loguser(username, password) {
+export function loguser(username, password, email) {
   return (dispatch) => {
     console.log("loguser :  " + username);
     dispatch(loguserBegin());
@@ -15,16 +10,32 @@ export function loguser(username, password) {
     return axios
       .get(const_apiurl + "login?login=" + username + "&password=" + password)
       .then((json) => {
-        console.log("loguserSucces : "); //+ JSON.stringify(json.data.success
+        // if (json.data.success.token) {
+        console.log("loguserSucces : ");
         let login = {
           code: json.data.success.code,
           token: json.data.success.token,
           username: username,
         };
         dispatch(loguserSuccess(login));
-        // setToken(login.token);
         localStorage.setItem("token", login.token);
+
+        // } else {
+        // const token = localStorage.getItem("token");
+        axios
+          .get(
+            const_apiurl +
+              "thirdparties/email/" +
+              email +
+              "?DOLAPIKEY=" +
+              login.token
+          )
+          .then((json) => {
+            localStorage.setItem("userId", json.data.id);
+          })
+          .catch((error) => console.log(error));
         return "";
+        // }
       })
       .catch((error) => {
         console.log("loguserFailure");
@@ -35,8 +46,6 @@ export function loguser(username, password) {
         }
       });
   };
-  //   }
-  // }
 }
 
 export const LOG_USER_BEGIN = "LOG_USER_BEGIN";

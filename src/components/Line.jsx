@@ -371,7 +371,6 @@ const Line = ({ id, date, week, month, place, meals, regimeId }) => {
       }
     }
   }
-  console.log("token === ", token);
   return <div>{line}</div>;
 };
 

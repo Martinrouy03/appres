@@ -3,23 +3,21 @@ import { useState } from "react";
 import { loguser } from "../services/login/LoginActions";
 import { useDispatch, useSelector, shallowEqual } from "react-redux";
 
-const LoginModal = ({ setVisible }) => {
+const LoginModal = () => {
   const dispatch = useDispatch();
   const [username, setUsername] = useState("");
   const [pwd, setPwd] = useState("");
-  // const [errorMessage, setErrorMessage] = useState("");
-  const error = useSelector((state) => state.loginReducer.error);
+  const [email, setEmail] = useState("");
+  const error = useSelector((state) => state.loginReducer.error, shallowEqual);
 
-  const handleSubmit = (username, password) => {
-    console.log(username, password);
-    dispatch(loguser(username, password));
+  const handleSubmit = async (username, password) => {
+    dispatch(loguser(username, password, email));
   };
-  error && console.log("error :", error.response.status);
   return (
     <div
       className="modal-root"
       onMouseDown={() => {
-        setVisible(false);
+        // setVisible(false);
       }}
     >
       <div
@@ -29,7 +27,6 @@ const LoginModal = ({ setVisible }) => {
         }}
         onSubmit={(event) => {
           event.preventDefault();
-          // setErrorMessage("");
           handleSubmit(username, pwd);
           setUsername("");
           setPwd("");
@@ -48,6 +45,14 @@ const LoginModal = ({ setVisible }) => {
               }}
             />
           </div>
+          <input
+            type="email"
+            value={email}
+            placeholder="example@mail.com"
+            onChange={(event) => {
+              setEmail(event.target.value);
+            }}
+          />
           <input
             type="password"
             value={pwd}

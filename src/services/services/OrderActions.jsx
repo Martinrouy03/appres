@@ -2,9 +2,6 @@ import { const_apiurl } from "../../Constant.js";
 import axios from "axios";
 import moment from "moment";
 
-// import { getUserToken } from "../login/LoginActions.js";
-// import { token } from "../../app/App.jsx";
-
 export function getOrder(customerID, month, setCommandNb, token) {
   return (dispatch) => {
     console.log("getOrderBegin : Customer " + customerID);

@@ -83,8 +83,7 @@ function App() {
   const [regimeId, setRegimeId] = useState("4");
   const [commandNb, setCommandNb] = useState(0);
   let token = localStorage.getItem("token") || "";
-  // const [token, setToken] = useState();
-  const [visible, setVisible] = useState(false);
+  const userId = localStorage.getItem("userId") || "";
 
   const firstDay = mm === month ? day : new Date(year, month, 1).getDay(); // Jour de la semaine du premier jour du mois
   const lastDay = new Date(year, month + 1, 0).getDay(); // Jour de la semaine du dernier jour du mois
@@ -97,21 +96,20 @@ function App() {
   }
 
   const ids = [1, 2, 3];
-  // console.log("token :", token, modalClose);
   useEffect(() => {
     token && dispatch(getPlaces(token));
     token && dispatch(getRegimes(token));
-    token && dispatch(getOrder(customer, month, setCommandNb, token));
+    token && dispatch(getOrder(userId, month, setCommandNb, token));
   }, [month, token]);
   // console.log(week, relWeek, month);
 
   return (
     <>
-      {/* {error && <Alert severity="error">Erreur : {error.message}</Alert>} */}
-      <Header setVisible={setVisible} token={token} />
-      {!modalClose && !token && <LoginModal setVisible={setVisible} />}
+      {error && <Alert severity="error">Erreur : {error.message}</Alert>}
+      <Header token={token} />
+      {!modalClose && !token && <LoginModal />}
       {!token ? (
-        <div className="center">Vous devez d'abord vous connecter</div>
+        <div className="center">Veuillez vous connecter</div>
       ) : (
         <main className="container">
           <div className="center">
@@ -224,7 +222,7 @@ function App() {
             {/* )} */}
           </div>
           <div className="center">
-            {regimes && (
+            {regimes && order.lines && (
               <RadioButtons
                 regimes={regimes}
                 regimeId={regimeId}
@@ -238,7 +236,7 @@ function App() {
             )}
           </div>
           {/* Lieu 1 */}
-          {places &&
+          {places && order.lines ? (
             places.map((place, index) => {
               return (
                 <div index={index} className="tables">
@@ -311,7 +309,10 @@ function App() {
                   </div>
                 </div>
               );
-            })}
+            })
+          ) : (
+            <div className="center">Réservation indisponible</div>
+          )}
           <div className="buttons">
             <div className="line">
               <div className="left-div" style={{ backgroundColor: "#FFFFFF" }}>
