@@ -82,7 +82,8 @@ function App() {
   const [month, setMonth] = useState(mm);
   const [regimeId, setRegimeId] = useState("4");
   const [commandNb, setCommandNb] = useState(0);
-  const [token, setToken] = useState("");
+  let token = localStorage.getItem("token") || "";
+  // const [token, setToken] = useState();
   const [visible, setVisible] = useState(false);
 
   const firstDay = mm === month ? day : new Date(year, month, 1).getDay(); // Jour de la semaine du premier jour du mois
@@ -96,28 +97,19 @@ function App() {
   }
 
   const ids = [1, 2, 3];
-  // localStorage.setItem("token", "");
-  // const token = localStorage.getItem("token");
-  // if (token) {
-  //   console.log(token);
-  // } else {
-  //   setVisible(true);
-  // }
+  // console.log("token :", token, modalClose);
   useEffect(() => {
-    //   // if (token) {
     token && dispatch(getPlaces(token));
     token && dispatch(getRegimes(token));
     token && dispatch(getOrder(customer, month, setCommandNb, token));
-    //   // }
   }, [month, token]);
   // console.log(week, relWeek, month);
+
   return (
     <>
       {/* {error && <Alert severity="error">Erreur : {error.message}</Alert>} */}
-      <Header setVisible={setVisible} />
-      {!modalClose && (
-        <LoginModal setVisible={setVisible} setToken={setToken} />
-      )}
+      <Header setVisible={setVisible} token={token} />
+      {!modalClose && !token && <LoginModal setVisible={setVisible} />}
       {!token ? (
         <div className="center">Vous devez d'abord vous connecter</div>
       ) : (
@@ -276,18 +268,18 @@ function App() {
                       return (
                         <div key={id} className="line">
                           <div className="left-div">
-                            {/* {order.lines && ( */}
-                            <Line
-                              id={id}
-                              date={date}
-                              week={week}
-                              month={month}
-                              place={place}
-                              meals={meals}
-                              // order={order}
-                              regimeId={regimeId}
-                            ></Line>
-                            {/* )} */}
+                            {order.lines && (
+                              <Line
+                                id={id}
+                                date={date}
+                                week={week}
+                                month={month}
+                                place={place}
+                                meals={meals}
+                                // order={order}
+                                regimeId={regimeId}
+                              ></Line>
+                            )}
                           </div>
                           {filterMeals(
                             meals,

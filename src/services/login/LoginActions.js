@@ -7,7 +7,7 @@ import { store } from "../../app/App";
 // import { getRegimes } from "../services/services/RegimesActions";
 // import { customer } from "../../app/App";
 
-export function loguser(username, password, setToken) {
+export function loguser(username, password) {
   return (dispatch) => {
     console.log("loguser :  " + username);
     dispatch(loguserBegin());
@@ -22,13 +22,8 @@ export function loguser(username, password, setToken) {
           username: username,
         };
         dispatch(loguserSuccess(login));
-        setToken(login.token);
-        // dispatch(getPlaces());
-        // dispatch(getRegimes());
-        // dispatch(getOrder(customer, month, setCommandNb));
-        /* update the status of the link with Dolibarr */
-        // dispatch(getDolibarrStatus());
-
+        // setToken(login.token);
+        localStorage.setItem("token", login.token);
         return "";
       })
       .catch((error) => {
@@ -65,3 +60,39 @@ export const loguserFailure = (error) => ({
 export function getUserToken() {
   return store.getState().loginReducer.user.token;
 }
+
+export function logout() {
+  return (dispatch) => {
+    console.log("logout begin");
+    dispatch(logoutBegin());
+    localStorage.removeItem("token");
+    try {
+      console.log("logout Success");
+      dispatch(logoutSuccess());
+    } catch (error) {
+      console.log(error);
+      dispatch(logoutFailure(error));
+    }
+  };
+}
+
+export const LOGOUT_USER_BEGIN = "LOGOUT_USER_BEGIN";
+export const LOGOUT_USER_SUCCESS = "LOGOUT_USER_SUCCESS";
+export const LOGOUT_USER_FAILURE = "LOGOUT_USER_FAILURE";
+
+export const logoutBegin = () => ({
+  type: LOGOUT_USER_BEGIN,
+});
+
+export const logoutSuccess = () => ({
+  type: LOGOUT_USER_SUCCESS,
+});
+
+export const logoutFailure = (error) => ({
+  type: LOGOUT_USER_FAILURE,
+  payload: { error },
+});
+
+// export function getUserToken() {
+//   return store.getState().loginReducer.user.token;
+// }

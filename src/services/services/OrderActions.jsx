@@ -107,7 +107,7 @@ export function updateOrderLine(
       .then((json) => {
         console.log("updateOrderLineSuccess");
         // *** Reload order
-        dispatch(getOrder(customerID, month));
+        dispatch(getOrder(customerID, month, "", token));
       })
       .catch((error) => {
         console.log("updateOrderLineFailure");
@@ -121,7 +121,7 @@ export function updateOrderLine(
               })
             );
             // Reload Order
-            dispatch(getOrder(orderId));
+            dispatch(getOrder(orderId, "", "", token));
           } else {
             dispatch(
               updateOrderLineFailure({
@@ -227,7 +227,7 @@ export function addOrderLine(order, month, orderline, token) {
         console.log("addOrderLineSuccess");
         dispatch(addOrderLineSuccess(json.data));
         // *** Reload order
-        dispatch(getOrder(order.socid, month));
+        dispatch(getOrder(order.socid, month, "", token));
         // dispatch(getOrder(order.id));
         // return json;
       })
@@ -246,7 +246,7 @@ export function addOrderLine(order, month, orderline, token) {
             );
 
             // *** Reload order
-            dispatch(getOrder(order.id));
+            dispatch(getOrder(order.id, "", "", token));
           } else {
             dispatch(
               addOrderLineFailure({
@@ -316,7 +316,7 @@ export function removeOrderLine(
         dispatch(removeOrderLineSuccess(json.data));
 
         // *** Reload order
-        dispatch(getOrder(customerID, month));
+        dispatch(getOrder(customerID, month, "", token));
       })
       .catch((error) => {
         console.log("removeOrderLineFailure");
@@ -364,7 +364,7 @@ export const removeOrderLineFailure = (error) => ({
 
 // ----------- SPLIT LINE INTO TWO -----------------//
 
-export function orderBreakLine(order, orderline, breakDate, month) {
+export function orderBreakLine(order, orderline, breakDate, month, token) {
   return (dispatch) => {
     console.log("setorderBreakLine :  " + orderline.id);
     const newEndDate = breakDate - 24 * 3600;
@@ -408,7 +408,8 @@ export function orderBreakLine(order, orderline, breakDate, month) {
           },
           qty: String(diffInDays2),
           subprice: orderline.subprice,
-        }
+        },
+        token
       )
     );
   };
@@ -471,9 +472,9 @@ export function updateOrderLineandAddOrderline(
         console.log("updateOrderLineandAddOrderlineSuccess");
         dispatch(updateOrderLineandAddOrderlineSuccess(json.data));
 
-        dispatch(addOrderLine(order, month, addStruct));
+        dispatch(addOrderLine(order, month, addStruct, token));
         // *** Reload order
-        dispatch(getOrder(order.socid, month));
+        dispatch(getOrder(order.socid, month, "", token));
       })
       .catch((error) => {
         // *** an 404 error is sent when Dolibarr didn't find invoices
@@ -489,7 +490,7 @@ export function updateOrderLineandAddOrderline(
             );
 
             // *** Reload order
-            dispatch(getOrder(orderid));
+            dispatch(getOrder(orderid, "", "", token));
           } else {
             dispatch(
               updateOrderLineFailure({

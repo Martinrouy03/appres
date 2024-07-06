@@ -2,6 +2,9 @@ import {
   LOG_USER_BEGIN,
   LOG_USER_SUCCESS,
   LOG_USER_FAILURE,
+  LOGOUT_USER_BEGIN,
+  LOGOUT_USER_FAILURE,
+  LOGOUT_USER_SUCCESS,
 } from "./LoginActions";
 
 const initialState = {
@@ -33,6 +36,28 @@ export default function LoginReducer(state = initialState, action) {
       };
 
     case LOG_USER_FAILURE:
+      return {
+        ...state,
+        loading: false,
+        modalClose: false,
+        error: action.payload.error,
+      };
+    case LOGOUT_USER_BEGIN:
+      return {
+        ...state,
+        loading: true,
+        isLogged: false,
+        error: null,
+      };
+    case LOGOUT_USER_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        modalClose: true,
+        user: { code: "", username: "", token: "" },
+        isLogged: false,
+      };
+    case LOGOUT_USER_FAILURE:
       return {
         ...state,
         loading: false,

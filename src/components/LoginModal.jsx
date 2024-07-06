@@ -1,18 +1,20 @@
 import React from "react";
 import { useState } from "react";
 import { loguser } from "../services/login/LoginActions";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector, shallowEqual } from "react-redux";
 
-const LoginModal = ({ setVisible, setToken }) => {
+const LoginModal = ({ setVisible }) => {
   const dispatch = useDispatch();
   const [username, setUsername] = useState("");
   const [pwd, setPwd] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  // const [errorMessage, setErrorMessage] = useState("");
+  const error = useSelector((state) => state.loginReducer.error);
 
   const handleSubmit = (username, password) => {
     console.log(username, password);
-    dispatch(loguser(username, password, setToken));
+    dispatch(loguser(username, password));
   };
+  error && console.log("error :", error.response.status);
   return (
     <div
       className="modal-root"
@@ -27,8 +29,10 @@ const LoginModal = ({ setVisible, setToken }) => {
         }}
         onSubmit={(event) => {
           event.preventDefault();
-          setErrorMessage("");
+          // setErrorMessage("");
           handleSubmit(username, pwd);
+          setUsername("");
+          setPwd("");
         }}
       >
         <form>
@@ -43,14 +47,6 @@ const LoginModal = ({ setVisible, setToken }) => {
                 setUsername(event.target.value);
               }}
             />
-            {/* <input
-              type="email"
-              value={email}
-              placeholder="blabla@mail.com"
-              onChange={(event) => {
-                setEmail(event.target.value);
-              }}
-            /> */}
           </div>
           <input
             type="password"
@@ -60,8 +56,10 @@ const LoginModal = ({ setVisible, setToken }) => {
               setPwd(event.target.value);
             }}
           />
-          {errorMessage && (
-            <h3 style={{ color: "red", display: "center" }}>Unauthorized</h3>
+          {error && error.response.status === 403 && (
+            <h3 style={{ color: "red", display: "center" }}>
+              Identifiants incorrects
+            </h3>
           )}
           <input type="submit" value="Login" />
         </form>

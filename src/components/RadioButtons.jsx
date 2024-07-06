@@ -11,6 +11,7 @@ export default function RadioButtons({ regimes, regimeId, setRegimeId }) {
       <RadioGroup
         aria-labelledby="radio-buttons"
         name="radio-buttons-group"
+        defaultValue={regimeId}
         onChange={(event) => {
           setRegimeId(event.target.value);
         }}
