@@ -1,7 +1,11 @@
 import logo from "../assets/Logo.png";
 import { useDispatch } from "react-redux";
-import { logout, loguserBegin } from "../services/login/LoginActions";
-const Header = ({ setVisible, token }) => {
+import {
+  logout,
+  loguserBegin,
+  getLogout,
+} from "../services/login/LoginActions";
+const Header = ({ token }) => {
   const dispatch = useDispatch();
   return (
     <header>
@@ -13,7 +17,7 @@ const Header = ({ setVisible, token }) => {
             className="btn"
             onClick={() => {
               dispatch(logout());
-              // setVisible(true);
+              getLogout();
             }}
           >
             Logout
@@ -23,7 +27,6 @@ const Header = ({ setVisible, token }) => {
             className="btn"
             onClick={() => {
               dispatch(loguserBegin());
-              // setVisible(true);
             }}
           >
             Se connecter

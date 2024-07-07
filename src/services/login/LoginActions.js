@@ -1,6 +1,7 @@
 import { const_apiurl } from "../../Constant";
 import axios from "axios";
 import { store } from "../../app/App";
+import { get } from "lodash";
 
 export function loguser(username, password, email) {
   return (dispatch) => {
@@ -78,6 +79,7 @@ export function logout() {
     try {
       console.log("logout Success");
       dispatch(logoutSuccess());
+      getLogout();
     } catch (error) {
       console.log(error);
       dispatch(logoutFailure(error));
@@ -102,6 +104,6 @@ export const logoutFailure = (error) => ({
   payload: { error },
 });
 
-// export function getUserToken() {
-//   return store.getState().loginReducer.user.token;
-// }
+export function getLogout() {
+  return store.getState().loginReducer.modalClose;
+}

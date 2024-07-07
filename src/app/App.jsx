@@ -47,8 +47,6 @@ export const store = configureStore({
   },
 });
 
-export const customer = "11"; //"11" "23105"
-
 function App() {
   const dispatch = useDispatch();
   const order = useSelector((state) => state.orderReducer.order, shallowEqual);
@@ -67,6 +65,10 @@ function App() {
     shallowEqual
   );
   // const user = useSelector((state) => state.loginReducer.user, shallowEqual);
+  const user = useSelector(
+    (state) => state.loginReducer.user.username,
+    shallowEqual
+  );
   const modalClose = useSelector(
     (state) => state.loginReducer.modalClose,
     shallowEqual
@@ -100,7 +102,7 @@ function App() {
     token && dispatch(getPlaces(token));
     token && dispatch(getRegimes(token));
     token && dispatch(getOrder(userId, month, setCommandNb, token));
-  }, [month, token]);
+  }, [month, user]);
   // console.log(week, relWeek, month);
 
   return (
@@ -195,7 +197,7 @@ function App() {
                   } else if (relWeek === 1) {
                     setMonth(month - 1);
                     const maxWeeks = computeMaxWeeks(year, month, 1);
-                    setRelWeek(maxWeeks);
+                    setRelWeek(maxWeeks + 1);
                   }
                 }}
                 icon="fa-solid fa-chevron-left"

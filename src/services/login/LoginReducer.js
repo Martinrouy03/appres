@@ -17,7 +17,6 @@ const initialState = {
 
 export default function LoginReducer(state = initialState, action) {
   switch (action.type) {
-    // *** Invoice  load
     case LOG_USER_BEGIN:
       return {
         ...state,
