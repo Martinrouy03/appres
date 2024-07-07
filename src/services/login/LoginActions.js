@@ -79,7 +79,6 @@ export function logout() {
     try {
       console.log("logout Success");
       dispatch(logoutSuccess());
-      getLogout();
     } catch (error) {
       console.log(error);
       dispatch(logoutFailure(error));
@@ -104,6 +103,6 @@ export const logoutFailure = (error) => ({
   payload: { error },
 });
 
-export function getLogout() {
-  return store.getState().loginReducer.modalClose;
-}
+// export function getLogout() {
+//   return store.getState().loginReducer.modalClose;
+// }

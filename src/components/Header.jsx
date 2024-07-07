@@ -17,7 +17,6 @@ const Header = ({ token }) => {
             className="btn"
             onClick={() => {
               dispatch(logout());
-              getLogout();
             }}
           >
             Logout
