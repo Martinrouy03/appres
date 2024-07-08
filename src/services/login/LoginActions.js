@@ -103,6 +103,14 @@ export const logoutFailure = (error) => ({
   payload: { error },
 });
 
-// export function getLogout() {
-//   return store.getState().loginReducer.modalClose;
-// }
+export function modalOut() {
+  return (dispatch) => {
+    console.log("Modal Out Success");
+    dispatch(ModalOutSuccess());
+  };
+}
+
+export const MODAL_OUT = "MODAL_OUT";
+export const ModalOutSuccess = () => ({
+  type: MODAL_OUT,
+});

@@ -1,6 +1,6 @@
 import React from "react";
 import { useState } from "react";
-import { loguser } from "../services/login/LoginActions";
+import { loguser, modalOut } from "../services/login/LoginActions";
 import { useDispatch, useSelector, shallowEqual } from "react-redux";
 
 const LoginModal = () => {
@@ -17,7 +17,7 @@ const LoginModal = () => {
     <div
       className="modal-root"
       onMouseDown={() => {
-        // setVisible(false);
+        dispatch(modalOut());
       }}
     >
       <div

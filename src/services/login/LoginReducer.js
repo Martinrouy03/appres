@@ -5,6 +5,7 @@ import {
   LOGOUT_USER_BEGIN,
   LOGOUT_USER_FAILURE,
   LOGOUT_USER_SUCCESS,
+  MODAL_OUT,
 } from "./LoginActions";
 
 const initialState = {
@@ -17,6 +18,8 @@ const initialState = {
 
 export default function LoginReducer(state = initialState, action) {
   switch (action.type) {
+    case MODAL_OUT:
+      return { ...state, modalClose: true };
     case LOG_USER_BEGIN:
       return {
         ...state,

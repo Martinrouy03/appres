@@ -36,8 +36,6 @@ import RegimesReducer from "../services/services/RegimesReducer";
 import LoginReducer from "../services/login/LoginReducer";
 
 library.add(faChevronRight, faChevronLeft, faChevronUp, faCircleXmark);
-// import { fetchToken } from "../features/login/loginSlice";
-// export const token = "08bdd4b8e4590f7a6eb3ae2d1ec320ffaf030519";
 export const store = configureStore({
   reducer: {
     orderReducer: OrderReducer,
@@ -64,7 +62,6 @@ function App() {
     (state) => state.orderReducer.loading,
     shallowEqual
   );
-  // const user = useSelector((state) => state.loginReducer.user, shallowEqual);
   const user = useSelector(
     (state) => state.loginReducer.user.username,
     shallowEqual
@@ -96,14 +93,17 @@ function App() {
   } else if (relWeek === maxWeeks) {
     lengthMax = lastDay || 7;
   }
-
+  // for (let i = 1; i < 10; i++) {
+  //   const tmp = new Date(date);
+  //   tmp.setDate(tmp.getDate() + i);
+  //   console.log(new Date(tmp));
+  // }
   const ids = [1, 2, 3];
   useEffect(() => {
     token && dispatch(getPlaces(token));
     token && dispatch(getRegimes(token));
     token && dispatch(getOrder(userId, month, setCommandNb, token));
-  }, [month, user]);
-  // console.log(week, relWeek, month);
+  }, [month, user, modalClose]);
 
   return (
     <>

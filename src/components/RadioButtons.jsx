@@ -24,7 +24,16 @@ export default function RadioButtons({ regimes, regimeId, setRegimeId }) {
             <FormControlLabel
               index={index}
               value={regime.rowid}
-              control={<Radio />}
+              control={
+                <Radio
+                  sx={{
+                    color: "grey.400", // default color
+                    "&.Mui-checked": {
+                      color: color[0].color,
+                    },
+                  }}
+                />
+              }
               label={regime.label}
               style={{
                 color: color[0].color,
