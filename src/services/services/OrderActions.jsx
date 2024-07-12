@@ -9,7 +9,8 @@ export function getOrder(customerID, month, setCommandNb, token) {
     return axios
       .get(
         const_apiurl +
-          "orders?sortfield=t.rowid&sortorder=ASC&limit=" +
+          "orders?sortfield=t.rowid&sortorder=ASC&limit=300&thirdparty_ids=" +
+          customerID +
           "&DOLAPIKEY=" +
           token
       )
@@ -18,8 +19,8 @@ export function getOrder(customerID, month, setCommandNb, token) {
 
         let orders = json.data.filter(
           (order) =>
+            // Number(order.statut) > 0 &&
             order.lines.length > 0 &&
-            order.socid === customerID &&
             order.lines[0].product_ref === "STA24_9990"
         );
         const commandNb = orders.length;
@@ -210,7 +211,7 @@ export function addOrderLine(order, month, orderline, token) {
     // }
     return axios
       .post(
-        const_apiurl + "orders/" + order.id + "/lines/" + "?DOLAPIKEY=" + token,
+        const_apiurl + "orders/" + order.id + "/lines" + "?DOLAPIKEY=" + token,
         {
           fk_product: orderline.fk_product,
           // ref: product.ref,

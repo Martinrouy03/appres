@@ -93,11 +93,6 @@ function App() {
   } else if (relWeek === maxWeeks) {
     lengthMax = lastDay || 7;
   }
-  // for (let i = 1; i < 10; i++) {
-  //   const tmp = new Date(date);
-  //   tmp.setDate(tmp.getDate() + i);
-  //   console.log(new Date(tmp));
-  // }
   const ids = [1, 2, 3];
   useEffect(() => {
     token && dispatch(getPlaces(token));
@@ -107,7 +102,7 @@ function App() {
 
   return (
     <>
-      {error && <Alert severity="error">Erreur : {error.message}</Alert>}
+      {/* {error && <Alert severity="error">Erreur : {error.message}</Alert>} */}
       <Header token={token} />
       {!modalClose && !token && <LoginModal />}
       {!token ? (
@@ -221,7 +216,6 @@ function App() {
               size="xl"
               style={{ color: "#ab0032" }}
             />
-            {/* )} */}
           </div>
           <div className="center">
             {regimes && order.lines && (
