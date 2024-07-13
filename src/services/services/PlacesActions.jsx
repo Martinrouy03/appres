@@ -1,12 +1,10 @@
 import { const_apiurl } from "../../Constant.js";
 import axios from "axios";
-import { useSelector } from "react-redux";
+// import { store } from "../../app/App.jsx";
 
 // import { getUserToken } from "../login/LoginActions.js";
-// import { token } from "../../app/App.jsx";
 
 export function getPlaces(token) {
-  // const token = useSelector((state) => state.loginReducer.user.token);
   return (dispatch) => {
     console.log("getPlacesBegin");
     dispatch(getPlacesBegin());
@@ -59,3 +57,7 @@ export const getPlacesFailure = (error) => ({
   type: GET_PLACES_FAILURE,
   payload: { error },
 });
+
+// export function getPlacesid() {
+//   return store.getState().placesReducer.places;
+// }

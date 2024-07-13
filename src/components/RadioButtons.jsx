@@ -20,6 +20,7 @@ export default function RadioButtons({ regimes, regimeId, setRegimeId }) {
           const color = regimeColors.filter(
             (regimeColor) => regimeColor.code === regime.code
           );
+
           return (
             <FormControlLabel
               index={index}

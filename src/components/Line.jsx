@@ -18,11 +18,24 @@ import {
 } from "../utils/functions";
 import { regimeColors } from "../app/configuration";
 const dayToMs = 24 * 3600 * 1000;
-const Line = ({ id, date, week, month, place, meals, regimeId }) => {
+const Line = ({
+  id,
+  date,
+  week,
+  month,
+  place,
+  meals,
+  disabledMeals,
+  regimeId,
+}) => {
   const dispatch = useDispatch();
-  const disabledMeals =
-    useSelector((state) => state.orderReducer.disabledMeals) || [];
+  // const disabledMeals =
+  //   useSelector((state) => state.orderReducer.disabledMeals) || [];
   const order = useSelector((state) => state.orderReducer.order, shallowEqual);
+  const regimes = useSelector(
+    (state) => state.regimesReducer.regimes,
+    shallowEqual
+  );
   let token = localStorage.getItem("token") || "";
 
   const day = date.getDay() || 7;
@@ -56,8 +69,10 @@ const Line = ({ id, date, week, month, place, meals, regimeId }) => {
     selectedDate.setDate(selectedDate.getDate() + shift);
     let selectedLines = [];
     let count = 0;
+
     selectedLines = order.lines.filter(
-      (line) => getMealCode(line.label) === id
+      (line) =>
+        getMealCode(line.libelle) === id || getMealCode(line.label) === id
     );
 
     // ----- Mise à jour des lignes de commande ----- //
@@ -328,19 +343,21 @@ const Line = ({ id, date, week, month, place, meals, regimeId }) => {
       );
     } else {
       let accentColor = regimeColors[0].color;
-      // let meal = "";
-      // if (meals) {
       const meal = meals.filter(
         (meal) =>
           meal.startsWith(`m${id}_w${week}_d${i}`) &&
           meal.endsWith(`p${place.rowid}`)
       );
       if (meal.length === 1) {
-        const color = regimeColors.filter(
-          (regimeColor) =>
-            regimeColor.rowid === String(meal[0][meal[0].indexOf("r") + 1])
-        );
-        accentColor = color[0].color;
+        const regimeID = String(meal[0][meal[0].indexOf("r") + 1]);
+        const regime = regimes.filter((regime) => regime.rowid === regimeID);
+        if (regime.length > 0) {
+          const color = regimeColors.filter(
+            (regimeColor) => regimeColor.code === regime[0].code
+          );
+
+          accentColor = color[0].color;
+        }
       }
       // }
 

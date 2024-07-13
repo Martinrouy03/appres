@@ -55,26 +55,16 @@ export default function OrderReducer(state = initialState, action) {
 
     case GET_ORDER_SUCCESS:
       let orderLines = {};
-      let result = [];
       let month = "";
-      // if (Object.keys(action.payload.order).includes("lines")) {
       orderLines = action.payload.order.lines;
-      result = convertLinesToArray(orderLines);
+      const refline = orderLines.filter((line) => line.ref === "STA24_9990");
       month = new Date(
-        moment.unix(
-          action.payload.order.lines[0].array_options.options_lin_datedebut
-        )
+        moment.unix(refline[0].array_options.options_lin_datedebut)
       ).getMonth();
-      // }
-
-      const meals = result.meals;
-      const disabledMeals = result.disabledMeals;
       return {
         ...state,
         loading: false,
         order: action.payload.order,
-        meals: meals,
-        disabledMeals: disabledMeals,
         month: month,
       };
 

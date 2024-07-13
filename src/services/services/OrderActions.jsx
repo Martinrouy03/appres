@@ -21,21 +21,25 @@ export function getOrder(customerID, month, setCommandNb, token) {
           (order) =>
             // Number(order.statut) > 0 &&
             order.lines.length > 0 &&
-            order.lines[0].product_ref === "STA24_9990"
+            order.lines.filter((line) => line.product === "STA24_9990")
+          // order.lines[0].product_ref === "STA24_9990"
         );
         const commandNb = orders.length;
         if (setCommandNb) {
           setCommandNb(commandNb);
         }
+        // const findRefline = (lines) => {
+        //   const refline = lines.some((line) => line.ref === "STA24_9990");
+        //   return refline[0];
+        // };
         const order = orders.filter(
           (order) =>
             new Date(
-              moment.unix(order.lines[0].array_options.options_lin_datedebut)
+              moment.unix(order.lines[0].array_options.options_lin_datedebut) //
             ).getMonth() === month
         );
-        // order[0] ?
+
         dispatch(getOrderSuccess(order[0]));
-        // : dispatch(getOrderSuccess([]));
 
         // *** Reload the customer : if there were changes in the order, the copy of the order in the customer is updated. Usefull for function such as getMealforadate etc
       })

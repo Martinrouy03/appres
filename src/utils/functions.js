@@ -1,4 +1,5 @@
 import moment from "moment";
+import { store } from "../app/App";
 
 export const filterMeals = (meals, id, week, relWeek, firstDay, place) => {
   return meals.filter((item) =>
@@ -9,7 +10,6 @@ export const filterMeals = (meals, id, week, relWeek, firstDay, place) => {
       : item.startsWith(`m${id}_w${week}`) && item.endsWith(`${place}`)
   );
 };
-
 export function convertMonth(mm) {
   let month = "";
   switch (mm) {
@@ -54,7 +54,6 @@ export function convertMonth(mm) {
   }
   return month;
 }
-
 export function convertDay(d) {
   let weekday = "";
   switch (d) {
@@ -84,14 +83,6 @@ export function convertDay(d) {
   }
   return weekday;
 }
-
-// const getUserToken = async () => {
-//   const userData = await axios.get(
-//     "http://localhost/dolibarr/api/index.php/login?login=Martin&password=KarmapaChenn0&reset=1"
-//   );
-//   setToken(userData.data.token);
-// };
-
 export const getMealCode = (label) => {
   switch (label) {
     case "Petit-déjeuner":
@@ -126,7 +117,6 @@ export const getMealLabel = (code) => {
       return 0;
   }
 };
-
 export const getPlaceLabel = (code) => {
   switch (code) {
     case 1:
@@ -151,14 +141,12 @@ export const getMealPrice = (code) => {
       return 0;
   }
 };
-
 export const enableDay = (shift, shiftMin, shiftMax) => {
   return (
     (shiftMin === -1 && shift >= 0 && shift <= shiftMax) ||
     (shift > shiftMin && shift <= shiftMax)
   );
 };
-
 export const computeMaxWeeks = (year, month, previousMonth) => {
   let maxWeeks = 0;
   if (previousMonth) {
@@ -221,12 +209,14 @@ export const convertLinesToArray = (orderLines) => {
   const weekday = date.getDay() || 7;
   const meals = [];
   const disabledMeals = [];
-  const places = ["1", "2", "3"];
+  const places = store.getState().placesReducer.places;
+  let placeids = [];
+  places && places.map((place) => placeids.push(place.rowid));
   orderLines.map((line) => {
     if (line.product_ref !== "STA24_9990") {
       const regime = line.array_options.options_lin_room;
       const place = line.array_options.options_lin_intakeplace;
-      const disabledPlaces = places.filter((p) => p !== place);
+      const disabledPlaces = placeids.filter((p) => p !== place);
       const dateDebut = new Date(
         moment.unix(line.array_options.options_lin_datedebut)
       );
@@ -235,7 +225,7 @@ export const convertLinesToArray = (orderLines) => {
       );
 
       const total = (dateFin - dateDebut) / (24 * 3600 * 1000) + 1;
-      let mealCode = getMealCode(line.label);
+      let mealCode = getMealCode(line.libelle) || getMealCode(line.label);
       for (let i = 0; i < total; i++) {
         const atomicDate = new Date(
           moment.unix(line.array_options.options_lin_datedebut)

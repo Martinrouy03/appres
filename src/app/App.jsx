@@ -8,7 +8,12 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { faCircleXmark } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { computeMaxWeeks, convertMonth, filterMeals } from "../utils/functions";
+import {
+  computeMaxWeeks,
+  convertMonth,
+  filterMeals,
+  convertLinesToArray,
+} from "../utils/functions";
 //Theming
 import "./App.scss";
 import "../fonts.css";
@@ -56,8 +61,13 @@ function App() {
     (state) => state.regimesReducer.regimes,
     shallowEqual
   );
-  const meals = useSelector((state) => state.orderReducer.meals, shallowEqual);
-  const error = useSelector((state) => state.orderReducer.error, shallowEqual);
+  let result = {
+    meals: [],
+    disabledMeals: [],
+  };
+  result = order.lines ? convertLinesToArray(order.lines) : result;
+  const meals = result.meals;
+  const disabledMeals = result.disabledMeals;
   const loading = useSelector(
     (state) => state.orderReducer.loading,
     shallowEqual
@@ -93,6 +103,7 @@ function App() {
   } else if (relWeek === maxWeeks) {
     lengthMax = lastDay || 7;
   }
+
   const ids = [1, 2, 3];
   useEffect(() => {
     token && dispatch(getPlaces(token));
@@ -102,7 +113,6 @@ function App() {
 
   return (
     <>
-      {/* {error && <Alert severity="error">Erreur : {error.message}</Alert>} */}
       <Header token={token} />
       {!modalClose && !token && <LoginModal />}
       {!token ? (
@@ -270,7 +280,7 @@ function App() {
                                 month={month}
                                 place={place}
                                 meals={meals}
-                                // order={order}
+                                disabledMeals={disabledMeals}
                                 regimeId={regimeId}
                               ></Line>
                             )}
@@ -319,6 +329,7 @@ function App() {
                     week={week}
                     month={month}
                     meals={meals}
+                    disabledMeals={disabledMeals}
                   ></Line>
                 )}
               </div>
