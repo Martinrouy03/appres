@@ -38,6 +38,7 @@ export default function RadioButtons({ regimes, regimeId, setRegimeId }) {
               label={regime.label}
               style={{
                 color: color[0].color,
+                height: "25px",
               }}
             />
           );

@@ -57,7 +57,3 @@ export const getPlacesFailure = (error) => ({
   type: GET_PLACES_FAILURE,
   payload: { error },
 });
-
-// export function getPlacesid() {
-//   return store.getState().placesReducer.places;
-// }
