@@ -21,13 +21,12 @@ import "../fonts.css";
 import { useDispatch } from "react-redux";
 import { shallowEqual, useSelector } from "react-redux";
 import { useEffect } from "react";
-
 // Actions
 import { getOrder } from "../services/services/OrderActions";
 import { getPlaces } from "../services/services/PlacesActions";
 import { getRegimes } from "../services/services/RegimesActions";
 // Composants
-import { Alert, CircularProgress } from "@mui/material";
+import { CircularProgress } from "@mui/material";
 import RadioButtons from "../components/RadioButtons";
 import Header from "../components/Header";
 import Line from "../components/Line";
@@ -52,6 +51,15 @@ export const store = configureStore({
 
 function App() {
   const dispatch = useDispatch();
+  const date = new Date();
+  const day = date.getDay() || 7;
+  const year = date.getFullYear();
+  const mm = date.getMonth();
+  const monthDay = date.getDate();
+  const init_week = Math.ceil(monthDay / 7);
+  const [week, setWeek] = useState(init_week);
+  const [month, setMonth] = useState(mm);
+  const newDate = new Date(year, month, 1);
   const order = useSelector((state) => state.orderReducer.order, shallowEqual);
   const places = useSelector(
     (state) => state.placesReducer.places,
@@ -67,6 +75,7 @@ function App() {
   };
   result = order.lines ? convertLinesToArray(order.lines) : result;
   const meals = result.meals;
+  console.log("meals: ", meals);
   const disabledMeals = result.disabledMeals;
   const loading = useSelector(
     (state) => state.orderReducer.loading,
@@ -80,37 +89,28 @@ function App() {
     (state) => state.loginReducer.modalClose,
     shallowEqual
   );
-  const date = new Date();
-  const day = date.getDay() || 7;
-  const year = date.getFullYear();
-  const mm = date.getMonth();
-  const monthDay = date.getDate();
-  const init_week = Math.ceil(monthDay / 7);
-  const [week, setWeek] = useState(0);
-  const [relWeek, setRelWeek] = useState(init_week);
-  const [month, setMonth] = useState(mm);
+
   const [regimeId, setRegimeId] = useState("4");
   const [commandNb, setCommandNb] = useState(0);
   let token = localStorage.getItem("token") || "";
   const userId = localStorage.getItem("userId") || "";
 
-  const firstDay = mm === month ? day : new Date(year, month, 1).getDay(); // Jour de la semaine du premier jour du mois
+  const firstDay = mm === month ? day : newDate.getDay(); // Jour de la semaine du premier jour du mois
   const lastDay = new Date(year, month + 1, 0).getDay(); // Jour de la semaine du dernier jour du mois
   const maxWeeks = computeMaxWeeks(year, month, 0);
   let lengthMax = 7;
-  if (week === 0 || relWeek === 0) {
+  if (week === 1) {
     lengthMax = 7 - firstDay + 1;
-  } else if (relWeek === maxWeeks) {
+  } else if (week === maxWeeks) {
     lengthMax = lastDay || 7;
   }
-
   const ids = [1, 2, 3];
   useEffect(() => {
     token && dispatch(getPlaces(token));
     token && dispatch(getRegimes(token));
     token && dispatch(getOrder(userId, month, setCommandNb, token));
   }, [month, user, modalClose]);
-
+  // console.log("month - mm: ", month - mm, "commandNb - 1", commandNb - 1);
   return (
     <>
       <Header token={token} />
@@ -129,28 +129,16 @@ function App() {
                 />
               )}
             </div>
-
             <div>
               <div className="center">
                 {month > mm && (
                   <FontAwesomeIcon
                     onClick={() => {
-                      const lastDayfromPreviousMonth = new Date(year, month, 0); // dernier jour du mois précédent
-                      let nDays = 0;
-                      let weeks = 0;
-
                       if (mm === month - 1) {
-                        // mois actuel
-                        nDays =
-                          lastDayfromPreviousMonth.getDate() - date.getDate(); // nombre de jours depuis la fin du mois dernier
-                        weeks = Math.ceil(nDays / 7); // nombre de semaines depuis la fin du mois dernier
-                        setRelWeek(Math.ceil(monthDay / 7));
+                        setWeek(Math.ceil(monthDay / 7));
                       } else {
-                        weeks = computeMaxWeeks(year, month, 1);
-                        setRelWeek(1);
+                        setWeek(1);
                       }
-                      console.log("check month minus:", week, weeks, relWeek);
-                      setWeek(week - weeks); // - relWeek); // +1
                       setMonth(month - 1);
                     }}
                     icon="fa-solid fa-chevron-left"
@@ -162,49 +150,7 @@ function App() {
                 {month - mm < commandNb - 1 && (
                   <FontAwesomeIcon
                     onClick={() => {
-                      let nDays = 0;
-                      let tmp = new Date();
-                      let weeks = 0;
-                      // On calcule le nombre de semaine entre la date du jour et le dernier jour du mois considéré
-                      for (let m = mm; m <= month; m++) {
-                        tmp = new Date(year, m + 1, 0); // On calcule le nombre de jours du mois considéré
-                        let w = 0;
-                        if (m === mm) {
-                          // pour le mois actuel
-                          nDays = tmp.getDate() - date.getDate(); // On calcule le nombre de jours restants avant la fin du mois
-                          w = Math.floor(nDays / 7);
-                          const weekDay = new Date(year, m, 7 * w).getDay();
-                          while (
-                            new Date(year, m, 7 * w - weekDay).getDate() >
-                            new Date(
-                              year,
-                              m,
-                              7 * (w - 1) - weekDay + 1
-                            ).getDate()
-                          ) {
-                            w++;
-                          }
-                          w--;
-                        } else {
-                          // pour les autres mois
-                          w = Math.floor(tmp.getDate() / 7);
-                          const weekDay = new Date(year, m, 7 * w).getDay();
-                          while (
-                            new Date(year, m, 7 * w - weekDay).getDate() >
-                            new Date(
-                              year,
-                              m,
-                              7 * (w - 1) - weekDay + 1
-                            ).getDate()
-                          ) {
-                            w++;
-                          }
-                          w--;
-                        }
-                        weeks = weeks + w;
-                      }
-                      setRelWeek(1);
-                      setWeek(weeks);
+                      setWeek(1);
                       setMonth(month + 1);
                     }}
                     icon="fa-solid fa-chevron-right"
@@ -214,16 +160,20 @@ function App() {
                 )}
               </div>
               <div className="center">
-                {!(month === mm && relWeek === init_week) && (
+                {!(month === mm && week === init_week) && (
                   <FontAwesomeIcon
                     onClick={() => {
-                      if (relWeek > 1) {
+                      if (week > 1) {
                         setWeek(week - 1);
-                        setRelWeek(relWeek - 1);
-                      } else if (relWeek === 1) {
+                      } else if (week === 1) {
                         setMonth(month - 1);
-                        const maxWeeks = computeMaxWeeks(year, month, 1);
-                        setRelWeek(maxWeeks + 1);
+                        if (mm === month - 1) {
+                          setWeek(
+                            Math.ceil(new Date(year, month, 0).getDate() / 7)
+                          );
+                        } else {
+                          setWeek(maxWeeks);
+                        }
                       }
                     }}
                     icon="fa-solid fa-chevron-left"
@@ -232,14 +182,12 @@ function App() {
                   />
                 )}
                 <h1>Semaine </h1>
-                {/* {relWeek < maxWeeks && ( */}
                 <FontAwesomeIcon
                   onClick={() => {
-                    if (relWeek <= maxWeeks) {
-                      setRelWeek(relWeek + 1);
+                    if (week <= maxWeeks) {
                       setWeek(week + 1);
-                    } else if (relWeek > maxWeeks) {
-                      setRelWeek(1);
+                    } else if (week > maxWeeks) {
+                      setWeek(1);
                       setMonth(month + 1);
                     }
                   }}
@@ -303,9 +251,9 @@ function App() {
                               meals,
                               id,
                               week,
-                              relWeek,
                               firstDay,
-                              place
+                              place,
+                              month
                             ).length === lengthMax ? (
                               <FontAwesomeIcon
                                 icon="fa-regular fa-circle-xmark"

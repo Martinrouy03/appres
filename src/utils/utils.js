@@ -227,3 +227,57 @@
 //     }
 //   }
 // };
+
+// {month - mm < commandNb - 1 && (
+//     <FontAwesomeIcon
+//       onClick={() => {
+//         let nDays = 0;
+//         let tmp = new Date();
+//         let weeks = 0;
+//         // On calcule le nombre de semaine entre la date du jour et le dernier jour du mois considéré
+//         for (let m = mm; m <= month; m++) {
+//           tmp = new Date(year, m + 1, 0); // On calcule le nombre de jours du mois considéré
+//           let w = 0;
+//           if (m === mm) {
+//             // pour le mois actuel
+//             nDays = tmp.getDate() - date.getDate(); // On calcule le nombre de jours restants avant la fin du mois
+//             w = Math.floor(nDays / 7);
+//             const weekDay = new Date(year, m, 7 * w).getDay();
+//             while (
+//               new Date(year, m, 7 * w - weekDay).getDate() >
+//               new Date(
+//                 year,
+//                 m,
+//                 7 * (w - 1) - weekDay + 1
+//               ).getDate()
+//             ) {
+//               w++;
+//             }
+//             w--;
+//           } else {
+//             // pour les autres mois
+//             w = Math.floor(tmp.getDate() / 7);
+//             const weekDay = new Date(year, m, 7 * w).getDay();
+//             while (
+//               new Date(year, m, 7 * w - weekDay).getDate() >
+//               new Date(
+//                 year,
+//                 m,
+//                 7 * (w - 1) - weekDay + 1
+//               ).getDate()
+//             ) {
+//               w++;
+//             }
+//             w--;
+//           }
+//           weeks = weeks + w;
+//         }
+//         setRelWeek(1);
+//         setWeek(weeks);
+//         setMonth(month + 1);
+//       }}
+//       icon="fa-solid fa-chevron-right"
+//       size="xl"
+//       style={{ color: "#ab0032" }}
+//     />
+//   )}

@@ -2,7 +2,6 @@ import { convertDay } from "../utils/functions";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useSelector, shallowEqual, useDispatch } from "react-redux";
 import moment from "moment";
-// import * as _ from "lodash";
 import {
   updateOrderLine,
   addOrderLine,
@@ -29,47 +28,44 @@ const Line = ({
   regimeId,
 }) => {
   const dispatch = useDispatch();
-  // const disabledMeals =
-  //   useSelector((state) => state.orderReducer.disabledMeals) || [];
   const order = useSelector((state) => state.orderReducer.order, shallowEqual);
   const regimes = useSelector(
     (state) => state.regimesReducer.regimes,
     shallowEqual
   );
   let token = localStorage.getItem("token") || "";
-
   const day = date.getDay() || 7;
   const mm = date.getMonth();
-  const year = date.getFullYear();
-  // shiftMin et shiftMax sont les nombres min et max de jours à partir de la date actuelle pour lesquelles la saisie est possible (non grisée)
-  let shiftMax = 0;
-  for (let i = mm; i <= month; i++) {
-    const tmp = new Date(year, i + 1, 0);
-    if (i === mm) {
-      shiftMax = tmp.getDate() - date.getDate();
-    } else {
-      shiftMax += tmp.getDate();
-    }
-  }
+  const year = mm < month ? date.getFullYear() : date.getFullYear() + 1;
+  const firstDay = mm === month ? date : new Date(year, month, 1); // //Jour J du mois actuel, et premier jour du mois suivant
+  const lastDay = new Date(year, month + 1, 0); // Dernier jour du mois
+  const init_week = Math.ceil(date.getDate() / 7);
 
+  // shiftMin et shiftMax sont les nombres min et max de jours
+  // à partir de la date actuelle pour lesquelles la saisie est possible (non grisée)
+  let shiftMax =
+    mm === month ? lastDay.getDate() - date.getDate() : lastDay.getDate();
   let shiftMin = 0;
-  for (let i = mm; i <= month; i++) {
-    const tmp = new Date(year, i, 0);
-    if (i === mm) {
-      shiftMin = -1;
-    } else if (i === mm + 1) {
-      shiftMin += tmp.getDate() - date.getDate() + 1;
-    } else {
-      shiftMin += tmp.getDate();
-    }
+  if (mm === month) {
+    shiftMin = -1;
   }
   const handleCheckBox = (shift, id, date) => {
-    const selectedDate = date;
+    // console.log(date.toDateString());
+    const selectedDate = date; // initialisation à la date du jour
     selectedDate.setHours(0, 0, 0, 0);
-    selectedDate.setDate(selectedDate.getDate() + shift);
+    if (mm === month) {
+      selectedDate.setDate(selectedDate.getDate() + shift); // date du jour + shift = selected date
+    } else {
+      selectedDate.setDate(selectedDate.getDate() + shift - 1); // date du jour + shift = selected date
+    }
     let selectedLines = [];
     let count = 0;
-
+    console.log(
+      "SHIFT: ",
+      shift,
+      "selectedDate: ",
+      selectedDate.toDateString()
+    );
     selectedLines = order.lines.filter(
       (line) =>
         getMealCode(line.libelle) === id || getMealCode(line.label) === id
@@ -264,7 +260,6 @@ const Line = ({
         )
       );
     }
-    // return "OK";
   };
 
   let line = [];
@@ -289,8 +284,12 @@ const Line = ({
       line.push(<div></div>);
   }
   for (let i = 1; i < 8; i++) {
-    const shift = i - day + week * 7;
-
+    let shift = 0;
+    if (mm === month) {
+      shift = i - day + (week - init_week) * 7;
+    } else {
+      shift = i - (firstDay.getDay() || 7) + 1 + (week - 1) * 7;
+    }
     if (id === "dayName") {
       line.push(
         <div
@@ -303,9 +302,14 @@ const Line = ({
         </div>
       );
     } else if (id === "dayNum") {
-      const dateShift = new Date();
-      // console.log(shiftMin, shift, shiftMax);
-      dateShift.setDate(dateShift.getDate() + shift);
+      let dateShift = "";
+      if (mm === month) {
+        dateShift = new Date();
+        dateShift.setDate(dateShift.getDate() + shift);
+      } else {
+        dateShift = new Date(year, month, 0);
+        dateShift.setDate(dateShift.getDate() + shift);
+      }
       line.push(
         <div
           className="num"
@@ -321,8 +325,8 @@ const Line = ({
       line.push(
         <div key={i}>
           {enableDay(shift, shiftMin, shiftMax) &&
-            (meals.filter((item) => item.includes(`w${week}_d${i}`)).length ===
-            3 ? (
+            (meals.filter((item) => item.includes(`M${month}_w${week}_d${i}`))
+              .length === 3 ? (
               <FontAwesomeIcon
                 icon="fa-regular fa-circle-xmark"
                 size="2xl"
@@ -345,9 +349,12 @@ const Line = ({
       let accentColor = regimeColors[0].color;
       const meal = meals.filter(
         (meal) =>
-          meal.startsWith(`m${id}_w${week}_d${i}`) &&
+          meal.startsWith(`m${id}_M${month}_w${week}_d${i}`) &&
           meal.endsWith(`p${place.rowid}`)
       );
+      // console.log(meals);
+      // console.log(`m${id}_M${month}_w${week}_d${i}_p${place.rowid}`);
+      // console.log("meal: ", meal);
       if (meal.length === 1) {
         const regimeID = String(meal[0][meal[0].indexOf("r") + 1]);
         const regime = regimes.filter((regime) => regime.rowid === regimeID);
@@ -359,10 +366,9 @@ const Line = ({
           accentColor = color[0].color;
         }
       }
-      // }
 
       const disabledMeal = disabledMeals.includes(
-        `m${id}_w${week}_d${i}_p${place.rowid}`
+        `m${id}_M${month}_w${week}_d${i}_p${place.rowid}`
       );
       if (enableDay(shift, shiftMin, shiftMax) && !disabledMeal) {
         line.push(
@@ -373,7 +379,7 @@ const Line = ({
                 accentColor: accentColor,
               }}
               onChange={() => {
-                handleCheckBox(shift, id, date, place);
+                handleCheckBox(shift, id, firstDay, place);
               }}
               checked={meal.length === 1}
             />

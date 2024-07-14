@@ -1,13 +1,14 @@
 import moment from "moment";
 import { store } from "../app/App";
 
-export const filterMeals = (meals, id, week, relWeek, firstDay, place) => {
+export const filterMeals = (meals, id, week, firstDay, place, month) => {
   return meals.filter((item) =>
-    week === 0 || relWeek === 0
+    week === 1
       ? item[item.indexOf("d") + 1] >= firstDay &&
-        item.startsWith(`m${id}_w${week}`) &&
+        item.startsWith(`m${id}_M${month}_w${week}`) &&
         item.endsWith(`${place}`)
-      : item.startsWith(`m${id}_w${week}`) && item.endsWith(`${place}`)
+      : item.startsWith(`m${id}_M${month}_w${week}`) &&
+        item.endsWith(`${place}`)
   );
 };
 export function convertMonth(mm) {
@@ -142,6 +143,7 @@ export const getMealPrice = (code) => {
   }
 };
 export const enableDay = (shift, shiftMin, shiftMax) => {
+  // console.log("shift: ", shift, "shiftMin: ", shiftMin, "shiftMax: ", shiftMax);
   return (
     (shiftMin === -1 && shift >= 0 && shift <= shiftMax) ||
     (shift > shiftMin && shift <= shiftMax)
@@ -204,15 +206,16 @@ export const computeMaxWeeks = (year, month, previousMonth) => {
   return maxWeeks;
 };
 export const convertLinesToArray = (orderLines) => {
-  const date = new Date();
-  let week = 0;
-  const weekday = date.getDay() || 7;
+  let week = 1;
+  const date = new Date(); // date du jour
+  const mm = date.getMonth(); // Mois actuel
   const meals = [];
   const disabledMeals = [];
   const places = store.getState().placesReducer.places;
   let placeids = [];
   places && places.map((place) => placeids.push(place.rowid));
   orderLines.map((line) => {
+    // mapping sur les lignes de commandes
     if (line.product_ref !== "STA24_9990") {
       const regime = line.array_options.options_lin_room;
       const place = line.array_options.options_lin_intakeplace;
@@ -220,33 +223,43 @@ export const convertLinesToArray = (orderLines) => {
       const dateDebut = new Date(
         moment.unix(line.array_options.options_lin_datedebut)
       );
+      const month = dateDebut.getMonth();
+      const year = dateDebut.getFullYear();
+      const firstDay = new Date(year, month, 1);
+      const monthDay = mm === month ? date.getDate() : firstDay.getDay() || 7;
       const dateFin = new Date(
         moment.unix(line.array_options.options_lin_datefin)
       );
 
-      const total = (dateFin - dateDebut) / (24 * 3600 * 1000) + 1;
+      const total = (dateFin - dateDebut) / (24 * 3600 * 1000) + 1; // nb de jours dans la commande
       let mealCode = getMealCode(line.libelle) || getMealCode(line.label);
+
       for (let i = 0; i < total; i++) {
         const atomicDate = new Date(
           moment.unix(line.array_options.options_lin_datedebut)
         );
+
+        // boucle sur chaque jour de la commande
         atomicDate.setDate(atomicDate.getDate() + i);
         const shift =
-          (atomicDate.getTime() - date.getTime()) / (24 * 3600 * 1000);
-        week = Math.floor((weekday + shift) / 7);
+          mm === month
+            ? (atomicDate.getTime() - date.getTime()) / (24 * 3600 * 1000)
+            : (atomicDate.getTime() - firstDay.getTime()) / (24 * 3600 * 1000); // nombre de jours entre aujourd'hui et le jour en question
+        week = Math.ceil((monthDay + shift) / 7);
         const weekday_tmp = atomicDate.getDay() || 7;
         meals.push(
-          `m${mealCode}_w${week}_d${weekday_tmp}_r${regime}_p${place}`
+          `m${mealCode}_M${month}_w${week}_d${weekday_tmp}_r${regime}_p${place}`
         );
         disabledPlaces.map((p) => {
-          disabledMeals.push(`m${mealCode}_w${week}_d${weekday_tmp}_p${p}`);
+          disabledMeals.push(
+            `m${mealCode}_M${month}_w${week}_d${weekday_tmp}_p${p}`
+          );
         });
       }
     }
   });
   return { meals: meals, disabledMeals: disabledMeals };
 };
-
 export const convertToUnix = (date) => {
   return Math.floor(date.getTime() / 1000);
 };
