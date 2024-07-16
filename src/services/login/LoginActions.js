@@ -1,18 +1,17 @@
 import { const_apiurl } from "../../Constant";
 import axios from "axios";
 import { store } from "../../app/App";
-import { get } from "lodash";
+// import { get } from "lodash";
 
-export function loguser(username, password, email) {
+export function loguser(username, password) {
   return (dispatch) => {
     console.log("loguser :  " + username);
     dispatch(loguserBegin());
 
     return axios
-      .get(const_apiurl + "login?login=" + username + "&password=" + password)
+      .get(const_apiurl + "login?login=" + username + "&password=" + password) // fetch token
       .then((json) => {
-        // if (json.data.success.token) {
-        console.log("loguserSucces : ");
+        console.log("loguserSuccess : ");
         let login = {
           code: json.data.success.code,
           token: json.data.success.token,
@@ -20,19 +19,31 @@ export function loguser(username, password, email) {
         };
         dispatch(loguserSuccess(login));
         localStorage.setItem("token", login.token);
-
-        // } else {
-        // const token = localStorage.getItem("token");
         axios
           .get(
+            // fetch userId from username
             const_apiurl +
-              "thirdparties/email/" +
-              email +
-              "?DOLAPIKEY=" +
+              `users?sortfield=t.rowid&sortorder=ASC&sqlfilters=t.lastname:=:'${username}'` +
+              "&DOLAPIKEY=" +
               login.token
           )
           .then((json) => {
-            localStorage.setItem("userId", json.data.id);
+            console.log("fetchEmailSuccess : ");
+            console.log(json.data);
+            const email = json.data[0].email;
+            localStorage.setItem("userEmail", email);
+            axios
+              .get(
+                const_apiurl +
+                  "thirdparties/email/" +
+                  email +
+                  "?DOLAPIKEY=" +
+                  login.token
+              )
+              .then((json) => {
+                console.log("fetchEmailSuccess : ");
+                localStorage.setItem("userId", json.data.id);
+              });
           })
           .catch((error) => console.log(error));
         return "";
@@ -76,6 +87,7 @@ export function logout() {
     console.log("logout begin");
     dispatch(logoutBegin());
     localStorage.removeItem("token");
+    localStorage.removeItem("userId");
     try {
       console.log("logout Success");
       dispatch(logoutSuccess());

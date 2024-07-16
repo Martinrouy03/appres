@@ -20,18 +20,17 @@ export function getOrder(customerID, month, setCommandNb, token) {
         let orders = json.data.filter(
           (order) =>
             // Number(order.statut) > 0 &&
-            order.lines.length > 0 &&
-            order.lines.filter((line) => line.product === "STA24_9990")
-          // order.lines[0].product_ref === "STA24_9990"
+            order.lines.length > 0 //&&
+          // order.lines.filter((line) => line.product === "STA24_9990")
+        );
+        orders = orders.filter((order) =>
+          order.lines.some((line) => line.ref === "STA24_9990")
         );
         const commandNb = orders.length;
         if (setCommandNb) {
           setCommandNb(commandNb);
         }
-        // const findRefline = (lines) => {
-        //   const refline = lines.some((line) => line.ref === "STA24_9990");
-        //   return refline[0];
-        // };
+        console.log("commandNb: ", commandNb);
         const order = orders.filter(
           (order) =>
             new Date(

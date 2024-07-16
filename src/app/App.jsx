@@ -75,7 +75,7 @@ function App() {
   };
   result = order.lines ? convertLinesToArray(order.lines) : result;
   const meals = result.meals;
-  console.log("meals: ", meals);
+  // console.log("meals: ", meals);
   const disabledMeals = result.disabledMeals;
   const loading = useSelector(
     (state) => state.orderReducer.loading,
