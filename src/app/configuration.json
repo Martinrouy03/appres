@@ -1,0 +1,9 @@
+{
+  "regimeColors": [
+    { "code": "MPT_VEGE", "color": "lightgreen" },
+    { "code": "MPT_WG-WM", "color": "orange" },
+    { "code": "MPT_WGLUTEN", "color": "red" },
+    { "code": "MPT_WMILK", "color": "brown" }
+  ],
+  "codeRepas": "STA24_9990"
+}

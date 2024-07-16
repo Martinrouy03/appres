@@ -1,5 +1,6 @@
 import moment from "moment";
 import { store } from "../app/App";
+import config from "../app/configuration.json";
 
 export const filterMeals = (meals, id, week, firstDay, place, month) => {
   return meals.filter((item) =>
@@ -153,8 +154,9 @@ export const computeMaxWeeks = (year, month, previousMonth) => {
   let maxWeeks = 0;
   if (previousMonth) {
     const lastDayfromPreviousMonth = new Date(year, month, 0); // dernier jour du mois précédent
-    maxWeeks = Math.ceil(lastDayfromPreviousMonth.getDate() / 7);
     const weekDay = lastDayfromPreviousMonth.getDay() || 7;
+    maxWeeks = Math.ceil((lastDayfromPreviousMonth.getDate() + weekDay) / 7);
+    console.log("maxweek_init: ", maxWeeks);
     while (
       new Date(
         year,
@@ -177,6 +179,8 @@ export const computeMaxWeeks = (year, month, previousMonth) => {
         break;
       }
       maxWeeks--;
+      console.log("maxweek function: ", maxWeeks);
+
       console.log(
         new Date(
           year,
@@ -201,11 +205,12 @@ export const computeMaxWeeks = (year, month, previousMonth) => {
     ) {
       maxWeeks++;
     }
+    maxWeeks--;
   }
-  maxWeeks--;
   return maxWeeks;
 };
 export const convertLinesToArray = (orderLines) => {
+  const codeRepas = config.codeRepas;
   let week = 1;
   const date = new Date(); // date du jour
   const mm = date.getMonth(); // Mois actuel
@@ -216,7 +221,7 @@ export const convertLinesToArray = (orderLines) => {
   places && places.map((place) => placeids.push(place.rowid));
   orderLines.map((line) => {
     // mapping sur les lignes de commandes
-    if (line.product_ref !== "STA24_9990") {
+    if (line.product_ref !== codeRepas) {
       const regime = line.array_options.options_lin_room;
       const place = line.array_options.options_lin_intakeplace;
       const disabledPlaces = placeids.filter((p) => p !== place);

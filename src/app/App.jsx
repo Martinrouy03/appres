@@ -97,7 +97,7 @@ function App() {
 
   const firstDay = mm === month ? day : newDate.getDay(); // Jour de la semaine du premier jour du mois
   const lastDay = new Date(year, month + 1, 0).getDay(); // Jour de la semaine du dernier jour du mois
-  const maxWeeks = computeMaxWeeks(year, month, 0);
+  let maxWeeks = computeMaxWeeks(year, month, 0);
   let lengthMax = 7;
   if (week === 1) {
     lengthMax = 7 - firstDay + 1;
@@ -110,7 +110,6 @@ function App() {
     token && dispatch(getRegimes(token));
     token && dispatch(getOrder(userId, month, setCommandNb, token));
   }, [month, user, modalClose]);
-  // console.log("month - mm: ", month - mm, "commandNb - 1", commandNb - 1);
   return (
     <>
       <Header token={token} />
@@ -172,6 +171,8 @@ function App() {
                             Math.ceil(new Date(year, month, 0).getDate() / 7)
                           );
                         } else {
+                          maxWeeks = computeMaxWeeks(year, month, 1);
+                          console.log("maxWeeks: ", maxWeeks);
                           setWeek(maxWeeks);
                         }
                       }
@@ -182,19 +183,21 @@ function App() {
                   />
                 )}
                 <h1>Semaine </h1>
-                <FontAwesomeIcon
-                  onClick={() => {
-                    if (week <= maxWeeks) {
-                      setWeek(week + 1);
-                    } else if (week > maxWeeks) {
-                      setWeek(1);
-                      setMonth(month + 1);
-                    }
-                  }}
-                  icon="fa-solid fa-chevron-right"
-                  size="xl"
-                  style={{ color: "#ab0032" }}
-                />
+                {!(month - mm === commandNb - 1 && week === maxWeeks + 1) && (
+                  <FontAwesomeIcon
+                    onClick={() => {
+                      if (week <= maxWeeks) {
+                        setWeek(week + 1);
+                      } else if (week > maxWeeks) {
+                        setWeek(1);
+                        setMonth(month + 1);
+                      }
+                    }}
+                    icon="fa-solid fa-chevron-right"
+                    size="xl"
+                    style={{ color: "#ab0032" }}
+                  />
+                )}
               </div>
             </div>
           </div>

@@ -7,11 +7,9 @@ const LoginModal = () => {
   const dispatch = useDispatch();
   const [username, setUsername] = useState("");
   const [pwd, setPwd] = useState("");
-  // const [email, setEmail] = useState("");
   const error = useSelector((state) => state.loginReducer.error, shallowEqual);
 
   const handleSubmit = async (username, password) => {
-    // dispatch(loguser(username, password, email));
     dispatch(loguser(username, password));
   };
   return (
@@ -46,14 +44,6 @@ const LoginModal = () => {
               }}
             />
           </div>
-          {/* <input
-            type="email"
-            value={email}
-            placeholder="example@mail.com"
-            onChange={(event) => {
-              setEmail(event.target.value);
-            }}
-          /> */}
           <input
             type="password"
             value={pwd}

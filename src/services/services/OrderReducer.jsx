@@ -7,7 +7,7 @@ import {
   UPDATE_ORDERLINE_FAILURE,
 } from "./OrderActions";
 import moment from "moment";
-import { convertLinesToArray } from "../../utils/functions.js";
+import config from "../../app/configuration.json";
 
 const initialState = {
   order: {
@@ -31,6 +31,8 @@ const initialState = {
   orderToCloseEnd: false,
 };
 export default function OrderReducer(state = initialState, action) {
+  const codeRepas = config.codeRepas;
+
   switch (action.type) {
     // *** Get Order
     case GET_ORDER_BEGIN:
@@ -57,7 +59,7 @@ export default function OrderReducer(state = initialState, action) {
       let orderLines = {};
       let month = "";
       orderLines = action.payload.order.lines;
-      const refline = orderLines.filter((line) => line.ref === "STA24_9990");
+      const refline = orderLines.filter((line) => line.ref === codeRepas);
       month = new Date(
         moment.unix(refline[0].array_options.options_lin_datedebut)
       ).getMonth();

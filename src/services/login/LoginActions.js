@@ -9,7 +9,14 @@ export function loguser(username, password) {
     dispatch(loguserBegin());
 
     return axios
-      .get(const_apiurl + "login?login=" + username + "&password=" + password) // fetch token
+      .get(
+        const_apiurl +
+          "login?login=" +
+          username +
+          "&password=" +
+          password +
+          "&entity=1"
+      ) // fetch token
       .then((json) => {
         console.log("loguserSuccess : ");
         let login = {

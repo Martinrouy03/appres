@@ -1,8 +1,11 @@
 import { const_apiurl } from "../../Constant.js";
 import axios from "axios";
 import moment from "moment";
+import config from "../../app/configuration.json";
 
 export function getOrder(customerID, month, setCommandNb, token) {
+  const currentMonth = new Date().getMonth();
+  const codeRepas = config.codeRepas;
   return (dispatch) => {
     console.log("getOrderBegin : Customer " + customerID);
     dispatch(getOrderBegin());
@@ -21,11 +24,17 @@ export function getOrder(customerID, month, setCommandNb, token) {
           (order) =>
             // Number(order.statut) > 0 &&
             order.lines.length > 0 //&&
-          // order.lines.filter((line) => line.product === "STA24_9990")
         );
         orders = orders.filter((order) =>
-          order.lines.some((line) => line.ref === "STA24_9990")
+          order.lines.some(
+            (line) =>
+              line.ref === codeRepas &&
+              new Date(
+                moment.unix(line.array_options.options_lin_datedebut)
+              ).getMonth() >= currentMonth
+          )
         );
+
         const commandNb = orders.length;
         if (setCommandNb) {
           setCommandNb(commandNb);
