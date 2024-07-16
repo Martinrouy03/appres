@@ -105,6 +105,7 @@ function App() {
     lengthMax = lastDay || 7;
   }
   const ids = [1, 2, 3];
+  const maxid = ids[ids.length - 1];
   useEffect(() => {
     token && dispatch(getPlaces(token));
     token && dispatch(getRegimes(token));
@@ -236,7 +237,10 @@ function App() {
                       {ids.map((id) => {
                         return (
                           <div key={id} className="line">
-                            <div className="left-div">
+                            <div
+                              className="left-div"
+                              id={id === maxid ? "last" : "notlast"}
+                            >
                               {order.lines && (
                                 <Line
                                   id={id}

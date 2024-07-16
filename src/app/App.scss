@@ -86,10 +86,13 @@ header {
   align-items: center;
   gap: 10px;
 }
+
 .left-div {
   padding: 10px 0px;
   background-color: #f2f2f2;
   width: 90%;
+  margin-left: 50px;
+
   > div {
     display: flex;
     text-align: center;
@@ -101,7 +104,12 @@ header {
     }
   }
 }
-
+.table:last-child() {
+  border-radius: 0 0 10px 10px;
+}
+#last {
+  border-radius: 0 0 10px 10px;
+}
 .modal-root {
   position: fixed;
   z-index: 15;
