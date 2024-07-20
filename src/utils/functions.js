@@ -2,9 +2,17 @@ import moment from "moment";
 import { store } from "../app/App";
 import config from "../app/configuration.json";
 
-export const filterMeals = (meals, id, week, firstDay, place, month) => {
+export const filterMeals = (
+  meals,
+  id,
+  week,
+  init_week,
+  firstDay,
+  place,
+  month
+) => {
   return meals.filter((item) =>
-    week === 1
+    week === 1 || week === init_week
       ? item[item.indexOf("d") + 1] >= firstDay &&
         item.startsWith(`m${id}_M${month}_w${week}`) &&
         item.endsWith(`${place}`)
@@ -156,7 +164,6 @@ export const computeMaxWeeks = (year, month, previousMonth) => {
     const lastDayfromPreviousMonth = new Date(year, month, 0); // dernier jour du mois précédent
     const weekDay = lastDayfromPreviousMonth.getDay() || 7;
     maxWeeks = Math.ceil((lastDayfromPreviousMonth.getDate() + weekDay) / 7);
-    console.log("maxweek_init: ", maxWeeks);
     while (
       new Date(
         year,
@@ -179,7 +186,6 @@ export const computeMaxWeeks = (year, month, previousMonth) => {
         break;
       }
       maxWeeks--;
-      console.log("maxweek function: ", maxWeeks);
 
       console.log(
         new Date(
@@ -194,7 +200,7 @@ export const computeMaxWeeks = (year, month, previousMonth) => {
         ).toDateString()
       );
     }
-    maxWeeks++;
+    // maxWeeks++;
   } else {
     const lastDayfromSelectedMonth = new Date(year, month + 1, 0); // dernier jour du mois sélectionné
     maxWeeks = Math.floor(lastDayfromSelectedMonth.getDate() / 7); // Nombre max de changements de semaine / mois
@@ -205,8 +211,9 @@ export const computeMaxWeeks = (year, month, previousMonth) => {
     ) {
       maxWeeks++;
     }
-    maxWeeks--;
+    // maxWeeks--;
   }
+  console.log("output maxweeks function: ", maxWeeks);
   return maxWeeks;
 };
 export const convertLinesToArray = (orderLines) => {

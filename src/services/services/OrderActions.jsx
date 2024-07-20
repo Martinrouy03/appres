@@ -226,7 +226,6 @@ export function addOrderLine(order, month, orderline, token) {
         const_apiurl + "orders/" + order.id + "/lines" + "?DOLAPIKEY=" + token,
         {
           fk_product: orderline.fk_product,
-          // ref: product.ref,
           label: orderline.label,
           array_options: orderline.array_options,
           qty: orderline.qty,

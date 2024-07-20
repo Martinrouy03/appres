@@ -51,15 +51,43 @@ export const store = configureStore({
 
 function App() {
   const dispatch = useDispatch();
+  // fetch login variables in localStorage:
+  let token = localStorage.getItem("token") || "";
+  const userId = localStorage.getItem("userId") || "";
+
+  // initializing date variables:
   const date = new Date();
   const day = date.getDay() || 7;
   const year = date.getFullYear();
   const mm = date.getMonth();
   const monthDay = date.getDate();
   const init_week = Math.ceil(monthDay / 7);
+
+  // State instantiations:
+  const [regimeId, setRegimeId] = useState("4");
+  const [commandNb, setCommandNb] = useState(0);
   const [week, setWeek] = useState(init_week);
   const [month, setMonth] = useState(mm);
+
+  // More date variables
   const newDate = new Date(year, month, 1);
+  const firstDay = mm === month ? day : newDate.getDay() || 7; // Jour de la semaine du premier jour du mois
+  const lastDay = new Date(year, month + 1, 0).getDay(); // Jour de la semaine du dernier jour du mois
+  let maxWeeks = computeMaxWeeks(year, month, 0);
+  let lengthMax = 7; // used for weekButtons display
+  if (week === init_week || week === 1) {
+    lengthMax = 7 - firstDay + 1;
+  } else if (week === maxWeeks) {
+    lengthMax = lastDay || 7;
+  }
+  // console.log(
+  //   "week === init_week || week === 1: ",
+  //   week === init_week || week === 1
+  // );
+  // console.log("week === maxWeeks: ", week === maxWeeks);
+  console.log("week: ", week, "maxWeeks: ", maxWeeks);
+
+  // Selector instantiations:
   const order = useSelector((state) => state.orderReducer.order, shallowEqual);
   const places = useSelector(
     (state) => state.placesReducer.places,
@@ -69,14 +97,6 @@ function App() {
     (state) => state.regimesReducer.regimes,
     shallowEqual
   );
-  let result = {
-    meals: [],
-    disabledMeals: [],
-  };
-  result = order.lines ? convertLinesToArray(order.lines) : result;
-  const meals = result.meals;
-  // console.log("meals: ", meals);
-  const disabledMeals = result.disabledMeals;
   const loading = useSelector(
     (state) => state.orderReducer.loading,
     shallowEqual
@@ -90,27 +110,30 @@ function App() {
     shallowEqual
   );
 
-  const [regimeId, setRegimeId] = useState("4");
-  const [commandNb, setCommandNb] = useState(0);
-  let token = localStorage.getItem("token") || "";
-  const userId = localStorage.getItem("userId") || "";
+  // fetch meals and disabledMeals arrays, used to display the checkboxs
+  let result = {
+    meals: [],
+    disabledMeals: [],
+  };
+  result = order.lines ? convertLinesToArray(order.lines) : result;
+  const meals = result.meals;
+  const disabledMeals = result.disabledMeals;
 
-  const firstDay = mm === month ? day : newDate.getDay(); // Jour de la semaine du premier jour du mois
-  const lastDay = new Date(year, month + 1, 0).getDay(); // Jour de la semaine du dernier jour du mois
-  let maxWeeks = computeMaxWeeks(year, month, 0);
-  let lengthMax = 7;
-  if (week === 1) {
-    lengthMax = 7 - firstDay + 1;
-  } else if (week === maxWeeks) {
-    lengthMax = lastDay || 7;
-  }
+  // Identifying the type of meals: 1 = Breakfast; 2 = Lunch; 3 = Dinner:
   const ids = [1, 2, 3];
-  const maxid = ids[ids.length - 1];
+  const maxid = ids[ids.length - 1]; // maxid is used to identify the last Line component of each Place table, in order to apply specific css (border-radius)
+
   useEffect(() => {
     token && dispatch(getPlaces(token));
     token && dispatch(getRegimes(token));
     token && dispatch(getOrder(userId, month, setCommandNb, token));
   }, [month, user, modalClose]);
+
+  const handleWeekButtons = (id, month, week) => {};
+  // console.log(
+  //   lengthMax,
+  //   filterMeals(meals, 1, week, init_week, firstDay, 1, month).length
+  // );
   return (
     <>
       <Header token={token} />
@@ -167,15 +190,9 @@ function App() {
                         setWeek(week - 1);
                       } else if (week === 1) {
                         setMonth(month - 1);
-                        if (mm === month - 1) {
-                          setWeek(
-                            Math.ceil(new Date(year, month, 0).getDate() / 7)
-                          );
-                        } else {
-                          maxWeeks = computeMaxWeeks(year, month, 1);
-                          console.log("maxWeeks: ", maxWeeks);
-                          setWeek(maxWeeks);
-                        }
+                        maxWeeks = computeMaxWeeks(year, month, 1);
+                        console.log("maxWeeks: ", maxWeeks);
+                        setWeek(maxWeeks);
                       }
                     }}
                     icon="fa-solid fa-chevron-left"
@@ -184,12 +201,12 @@ function App() {
                   />
                 )}
                 <h1>Semaine </h1>
-                {!(month - mm === commandNb - 1 && week === maxWeeks + 1) && (
+                {!(month - mm === commandNb - 1 && week === maxWeeks) && (
                   <FontAwesomeIcon
                     onClick={() => {
-                      if (week <= maxWeeks) {
+                      if (week < maxWeeks) {
                         setWeek(week + 1);
-                      } else if (week > maxWeeks) {
+                      } else if (week === maxWeeks) {
                         setWeek(1);
                         setMonth(month + 1);
                       }
@@ -258,8 +275,9 @@ function App() {
                               meals,
                               id,
                               week,
+                              init_week,
                               firstDay,
-                              place,
+                              place.rowid,
                               month
                             ).length === lengthMax ? (
                               <FontAwesomeIcon
@@ -267,14 +285,14 @@ function App() {
                                 size="2xl"
                                 style={{ color: "#ab0032" }}
                                 // onClick={() => {
-                                //   handleWeekButtons(id, week);
+                                //   handleWeekButtons(id, month, week);
                                 // }}
                               />
                             ) : (
                               <FontAwesomeIcon
                                 icon="fa-solid fa-chevron-left"
                                 // onClick={() => {
-                                //   handleWeekButtons(id, week);
+                                //   handleWeekButtons(id, month, week);
                                 // }}
                               />
                             )}
@@ -288,7 +306,7 @@ function App() {
             ) : (
               <div className="center">Réservation indisponible</div>
             )}
-            <div className="buttons">
+            {/* <div className="buttons">
               <div className="line">
                 <div
                   className="left-div"
@@ -306,7 +324,7 @@ function App() {
                   )}
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
         </main>
       )}

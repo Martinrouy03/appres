@@ -51,8 +51,7 @@ const Line = ({
     shiftMin = -1;
   }
   const handleCheckBox = (shift, id, date) => {
-    // console.log(date.toDateString());
-    const selectedDate = date; // initialisation à la date du jour
+    const selectedDate = date; // initialisation
     selectedDate.setHours(0, 0, 0, 0);
     if (mm === month) {
       selectedDate.setDate(selectedDate.getDate() + shift); // date du jour + shift = selected date
@@ -61,12 +60,6 @@ const Line = ({
     }
     let selectedLines = [];
     let count = 0;
-    console.log(
-      "SHIFT: ",
-      shift,
-      "selectedDate: ",
-      selectedDate.toDateString()
-    );
     selectedLines = order.lines.filter(
       (line) =>
         getMealCode(line.libelle) === id || getMealCode(line.label) === id
@@ -353,9 +346,6 @@ const Line = ({
           meal.startsWith(`m${id}_M${month}_w${week}_d${i}`) &&
           meal.endsWith(`p${place.rowid}`)
       );
-      // console.log(meals);
-      // console.log(`m${id}_M${month}_w${week}_d${i}_p${place.rowid}`);
-      // console.log("meal: ", meal);
       if (meal.length === 1) {
         const regimeID = String(meal[0][meal[0].indexOf("r") + 1]);
         const regime = regimes.filter((regime) => regime.rowid === regimeID);
@@ -363,7 +353,6 @@ const Line = ({
           const color = regimeColors.filter(
             (regimeColor) => regimeColor.code === regime[0].code
           );
-
           accentColor = color[0].color;
         }
       }
@@ -380,7 +369,7 @@ const Line = ({
                 accentColor: accentColor,
               }}
               onChange={() => {
-                handleCheckBox(shift, id, firstDay, place);
+                handleCheckBox(shift, id, firstDay);
               }}
               checked={meal.length === 1}
             />
