@@ -12,6 +12,8 @@ import {
   getMealCode,
   getMealLabel,
   getMealPrice,
+  computeShift,
+  computeDateShift,
   convertToUnix,
   enableDay,
 } from "../utils/functions";
@@ -278,12 +280,16 @@ const Line = ({
       line.push(<div></div>);
   }
   for (let i = 1; i < 8; i++) {
-    let shift = 0;
-    if (mm === month) {
-      shift = i - day + (week - init_week) * 7;
-    } else {
-      shift = i - (firstDay.getDay() || 7) + 1 + (week - 1) * 7;
-    }
+    const shift = computeShift(
+      mm,
+      month,
+      i,
+      day,
+      firstDay.getDay(),
+      week,
+      init_week
+    );
+
     if (id === "dayName") {
       line.push(
         <div
@@ -296,14 +302,8 @@ const Line = ({
         </div>
       );
     } else if (id === "dayNum") {
-      let dateShift = "";
-      if (mm === month) {
-        dateShift = new Date();
-        dateShift.setDate(dateShift.getDate() + shift);
-      } else {
-        dateShift = new Date(year, month, 0);
-        dateShift.setDate(dateShift.getDate() + shift);
-      }
+      const dateShift = computeDateShift(mm, month, year, shift);
+
       line.push(
         <div
           className="num"

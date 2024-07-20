@@ -9,10 +9,17 @@ import {
 import { faCircleXmark } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
+  getMealCode,
+  getMealLabel,
+  getMealPrice,
+  convertToUnix,
+  computeShift,
   computeMaxWeeks,
+  computeLengthMax,
   convertMonth,
   filterMeals,
   convertLinesToArray,
+  computeDateShift,
 } from "../utils/functions";
 //Theming
 import "./App.scss";
@@ -22,7 +29,11 @@ import { useDispatch } from "react-redux";
 import { shallowEqual, useSelector } from "react-redux";
 import { useEffect } from "react";
 // Actions
-import { getOrder } from "../services/services/OrderActions";
+import {
+  getOrder,
+  addOrderLine,
+  removeOrderLine,
+} from "../services/services/OrderActions";
 import { getPlaces } from "../services/services/PlacesActions";
 import { getRegimes } from "../services/services/RegimesActions";
 // Composants
@@ -71,21 +82,16 @@ function App() {
 
   // More date variables
   const newDate = new Date(year, month, 1);
-  const firstDay = mm === month ? day : newDate.getDay() || 7; // Jour de la semaine du premier jour du mois
-  const lastDay = new Date(year, month + 1, 0).getDay(); // Jour de la semaine du dernier jour du mois
-  let maxWeeks = computeMaxWeeks(year, month, 0);
-  let lengthMax = 7; // used for weekButtons display
-  if (week === init_week || week === 1) {
-    lengthMax = 7 - firstDay + 1;
-  } else if (week === maxWeeks) {
-    lengthMax = lastDay || 7;
-  }
-  // console.log(
-  //   "week === init_week || week === 1: ",
-  //   week === init_week || week === 1
-  // );
-  // console.log("week === maxWeeks: ", week === maxWeeks);
-  console.log("week: ", week, "maxWeeks: ", maxWeeks);
+  const firstWeekDay = mm === month ? day : newDate.getDay() || 7; // Jour de la semaine du premier jour du mois
+  const lastWeekDay = new Date(year, month + 1, 0).getDay(); // Jour de la semaine du dernier jour du mois
+  const maxWeeks = computeMaxWeeks(year, month, 0);
+  const lengthMax = computeLengthMax(
+    week,
+    init_week,
+    maxWeeks,
+    firstWeekDay,
+    lastWeekDay
+  );
 
   // Selector instantiations:
   const order = useSelector((state) => state.orderReducer.order, shallowEqual);
@@ -129,11 +135,82 @@ function App() {
     token && dispatch(getOrder(userId, month, setCommandNb, token));
   }, [month, user, modalClose]);
 
-  const handleWeekButtons = (id, month, week) => {};
-  console.log(
-    lengthMax,
-    filterMeals(meals, 1, week, init_week, firstDay, 1, month).length
-  );
+  const handleWeekButtons = (id, month, week, place, suppress) => {
+    const shift = computeShift(
+      mm,
+      month,
+      1, // i
+      day,
+      firstWeekDay,
+      week,
+      init_week
+    );
+
+    // Determine startDate and endDate:
+    let startDate = computeDateShift(mm, month, year, shift);
+    let endDate = computeDateShift(mm, month, year, shift + 6);
+    if ((mm === month && week === init_week) || week === 1) {
+      startDate.setDate(startDate.getDate() + 7 - lengthMax);
+    }
+    if (week === maxWeeks) {
+      endDate.setDate(endDate.getDate() - 7 + lengthMax);
+    }
+    console.log("Start Date: ", startDate.toDateString());
+    console.log("End Date: ", endDate.toDateString());
+
+    // Determine orderlines already existing within the selected week and id
+    let selectedLines = [];
+    let count = 0;
+    selectedLines = order.lines.filter(
+      (line) =>
+        (getMealCode(line.libelle) === id || getMealCode(line.label) === id) &&
+        (line.array_options.options_lin_datedebut >= convertToUnix(startDate) ||
+          line.array_options.options_lin_datefin <= convertToUnix(endDate))
+    );
+    if (suppress) {
+      console.log("suppress");
+      dispatch(
+        removeOrderLine(
+          order.id,
+          selectedLines[0].id,
+          order.socid,
+          month,
+          token
+        )
+      );
+    } else {
+      console.log("not suppress");
+      if (selectedLines.length > 0) {
+        selectedLines.map((line) => {
+          dispatch(
+            removeOrderLine(order.id, line.id, order.socid, month, token)
+          );
+        });
+      }
+      dispatch(
+        addOrderLine(
+          order,
+          month,
+          {
+            array_options: {
+              options_lin_room: regimeId,
+              options_lin_intakeplace: String(place.rowid),
+              options_lin_datedebut: convertToUnix(startDate),
+              options_lin_datefin: convertToUnix(endDate),
+            },
+            fk_product: String(id + 1),
+            label: getMealLabel(id),
+            qty: lengthMax,
+            subprice: getMealPrice(id),
+            remise_percent: 0,
+          },
+          token
+        )
+      );
+    }
+  };
+
+  // determine start and end date:
   return (
     <>
       <Header token={token} />
@@ -190,7 +267,7 @@ function App() {
                         setWeek(week - 1);
                       } else if (week === 1) {
                         setMonth(month - 1);
-                        maxWeeks = computeMaxWeeks(year, month, 1);
+                        const maxWeeks = computeMaxWeeks(year, month, 1);
                         setWeek(maxWeeks);
                       }
                     }}
@@ -275,7 +352,7 @@ function App() {
                               id,
                               week,
                               init_week,
-                              firstDay,
+                              firstWeekDay,
                               place.rowid,
                               month
                             ).length === lengthMax ? (
@@ -283,16 +360,16 @@ function App() {
                                 icon="fa-regular fa-circle-xmark"
                                 size="2xl"
                                 style={{ color: "#ab0032" }}
-                                // onClick={() => {
-                                //   handleWeekButtons(id, month, week);
-                                // }}
+                                onClick={() => {
+                                  handleWeekButtons(id, month, week, place, 1);
+                                }}
                               />
                             ) : (
                               <FontAwesomeIcon
                                 icon="fa-solid fa-chevron-left"
-                                // onClick={() => {
-                                //   handleWeekButtons(id, month, week);
-                                // }}
+                                onClick={() => {
+                                  handleWeekButtons(id, month, week, place, 0);
+                                }}
                               />
                             )}
                           </div>

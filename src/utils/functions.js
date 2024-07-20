@@ -20,6 +20,41 @@ export const filterMeals = (
         item.endsWith(`${place}`)
   );
 };
+export function computeLengthMax(
+  week,
+  init_week,
+  maxWeeks,
+  firstWeekDay,
+  lastWeekDay
+) {
+  let lengthMax = 7; // used for weekButtons display
+  if (week === init_week || week === 1) {
+    lengthMax = 7 - firstWeekDay + 1;
+  } else if (week === maxWeeks) {
+    lengthMax = lastWeekDay || 7;
+  }
+  return lengthMax;
+}
+export function computeShift(mm, month, i, day, firstDay, week, init_week) {
+  let shift = 0;
+  if (mm === month) {
+    shift = i - day + (week - init_week) * 7;
+  } else {
+    shift = i - (firstDay || 7) + 1 + (week - 1) * 7;
+  }
+  return shift;
+}
+export function computeDateShift(mm, month, year, shift) {
+  let dateShift = "";
+  if (mm === month) {
+    dateShift = new Date();
+    dateShift.setDate(dateShift.getDate() + shift);
+  } else {
+    dateShift = new Date(year, month, 0);
+    dateShift.setDate(dateShift.getDate() + shift);
+  }
+  return dateShift;
+}
 export function convertMonth(mm) {
   let month = "";
   switch (mm) {
