@@ -39,7 +39,6 @@ export function getOrder(customerID, month, setCommandNb, token) {
         if (setCommandNb) {
           setCommandNb(commandNb);
         }
-        console.log("commandNb: ", commandNb);
         const order = orders.filter(
           (order) =>
             new Date(

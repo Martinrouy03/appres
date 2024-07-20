@@ -130,10 +130,10 @@ function App() {
   }, [month, user, modalClose]);
 
   const handleWeekButtons = (id, month, week) => {};
-  // console.log(
-  //   lengthMax,
-  //   filterMeals(meals, 1, week, init_week, firstDay, 1, month).length
-  // );
+  console.log(
+    lengthMax,
+    filterMeals(meals, 1, week, init_week, firstDay, 1, month).length
+  );
   return (
     <>
       <Header token={token} />
@@ -191,7 +191,6 @@ function App() {
                       } else if (week === 1) {
                         setMonth(month - 1);
                         maxWeeks = computeMaxWeeks(year, month, 1);
-                        console.log("maxWeeks: ", maxWeeks);
                         setWeek(maxWeeks);
                       }
                     }}

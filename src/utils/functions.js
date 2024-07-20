@@ -200,7 +200,7 @@ export const computeMaxWeeks = (year, month, previousMonth) => {
         ).toDateString()
       );
     }
-    // maxWeeks++;
+    maxWeeks++;
   } else {
     const lastDayfromSelectedMonth = new Date(year, month + 1, 0); // dernier jour du mois sélectionné
     maxWeeks = Math.floor(lastDayfromSelectedMonth.getDate() / 7); // Nombre max de changements de semaine / mois
@@ -213,7 +213,7 @@ export const computeMaxWeeks = (year, month, previousMonth) => {
     }
     // maxWeeks--;
   }
-  console.log("output maxweeks function: ", maxWeeks);
+  // console.log("output maxweeks function: ", maxWeeks);
   return maxWeeks;
 };
 export const convertLinesToArray = (orderLines) => {
