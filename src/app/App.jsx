@@ -1,4 +1,5 @@
 import { useState } from "react";
+import moment from "moment";
 // Icons
 import { library } from "@fortawesome/fontawesome-svg-core";
 import {
@@ -32,7 +33,10 @@ import { useEffect } from "react";
 import {
   getOrder,
   addOrderLine,
+  updateOrderLine,
   removeOrderLine,
+  orderBreakLine,
+  updateOrderLineandAddOrderline,
 } from "../services/services/OrderActions";
 import { getPlaces } from "../services/services/PlacesActions";
 import { getRegimes } from "../services/services/RegimesActions";
@@ -86,6 +90,8 @@ function App() {
   const lastWeekDay = new Date(year, month + 1, 0).getDay(); // Jour de la semaine du dernier jour du mois
   const maxWeeks = computeMaxWeeks(year, month, 0);
   const lengthMax = computeLengthMax(
+    mm,
+    month,
     week,
     init_week,
     maxWeeks,
@@ -147,51 +153,314 @@ function App() {
     );
 
     // Determine startDate and endDate:
+    let anteStartDate = computeDateShift(mm, month, year, shift - 1);
+    anteStartDate.setHours(0, 0, 0, 0);
     let startDate = computeDateShift(mm, month, year, shift);
+    startDate.setHours(0, 0, 0, 0);
     let endDate = computeDateShift(mm, month, year, shift + 6);
+    endDate.setHours(0, 0, 0, 0);
+    let postEndDate = computeDateShift(mm, month, year, shift + 7);
+    postEndDate.setHours(0, 0, 0, 0);
     if ((mm === month && week === init_week) || week === 1) {
       startDate.setDate(startDate.getDate() + 7 - lengthMax);
     }
     if (week === maxWeeks) {
       endDate.setDate(endDate.getDate() - 7 + lengthMax);
     }
-    console.log("Start Date: ", startDate.toDateString());
-    console.log("End Date: ", endDate.toDateString());
 
-    // Determine orderlines already existing within the selected week and id
+    // Identify orderlines already existing within the selected week and id
     let selectedLines = [];
-    let count = 0;
     selectedLines = order.lines.filter(
       (line) =>
         (getMealCode(line.libelle) === id || getMealCode(line.label) === id) &&
-        (line.array_options.options_lin_datedebut >= convertToUnix(startDate) ||
-          line.array_options.options_lin_datefin <= convertToUnix(endDate))
+        line.array_options.options_lin_datedebut >= convertToUnix(startDate) &&
+        line.array_options.options_lin_datefin <= convertToUnix(endDate)
+    );
+    // Identify orderline already crossing the startDate,
+    // or just the day before the desired week
+    let anteLine = [];
+    anteLine = order.lines.filter(
+      (line) =>
+        (getMealCode(line.libelle) === id || getMealCode(line.label) === id) &&
+        // line.array_options.options_lin_room === regimeId &&
+        line.array_options.options_lin_datedebut <=
+          convertToUnix(anteStartDate) &&
+        line.array_options.options_lin_datefin >=
+          convertToUnix(anteStartDate) &&
+        line.array_options.options_lin_datefin <= convertToUnix(endDate)
+    );
+
+    // Identify orderline already crossing the endDate,
+    // or just the day after the desired week
+    let postLine = [];
+    postLine = order.lines.filter(
+      (line) =>
+        (getMealCode(line.libelle) === id || getMealCode(line.label) === id) &&
+        // line.array_options.options_lin_room === regimeId &&
+        line.array_options.options_lin_datedebut >= convertToUnix(startDate) &&
+        line.array_options.options_lin_datedebut <=
+          convertToUnix(postEndDate) &&
+        line.array_options.options_lin_datefin >= convertToUnix(postEndDate)
+    );
+
+    // Identify orderline already crossing both startDate and endDate
+    let bridgeLine = [];
+    bridgeLine = order.lines.filter(
+      (line) =>
+        (getMealCode(line.libelle) === id || getMealCode(line.label) === id) &&
+        line.array_options.options_lin_datedebut < convertToUnix(startDate) &&
+        line.array_options.options_lin_datefin > convertToUnix(endDate)
     );
     if (suppress) {
-      console.log("suppress");
-      dispatch(
-        removeOrderLine(
-          order.id,
-          selectedLines[0].id,
-          order.socid,
-          month,
-          token
-        )
-      );
-    } else {
-      console.log("not suppress");
-      if (selectedLines.length > 0) {
-        selectedLines.map((line) => {
+      if (bridgeLine.length === 1) {
+        console.log("SPLIT BRIGDE LINE");
+        bridgeLine = {
+          ...bridgeLine[0],
+          array_options: { ...bridgeLine[0].array_options },
+        };
+        dispatch(
+          orderBreakLine(
+            order,
+            bridgeLine,
+            convertToUnix(startDate),
+            1,
+            month,
+            token
+          )
+        );
+      } else if (
+        anteLine.length === 1 &&
+        postLine.length === 1 &&
+        postLine[0].array_options.options_lin_datedebut ===
+          convertToUnix(startDate)
+      ) {
+        console.log("SHORTEN POSTLINE");
+        postLine = {
+          ...postLine[0],
+          array_options: { ...postLine[0].array_options },
+        };
+        postLine.array_options.options_lin_datedebut =
+          convertToUnix(postEndDate);
+        postLine.qty = Number(postLine.qty) - lengthMax;
+        dispatch(
+          updateOrderLine(
+            postLine.commande_id,
+            postLine.id,
+            postLine,
+            order.socid,
+            month,
+            token
+          )
+        );
+      } else if (anteLine.length === 1) {
+        // ANTELINE
+        anteLine = {
+          ...anteLine[0],
+          array_options: { ...anteLine[0].array_options },
+        };
+        if (
+          anteLine.array_options.options_lin_datefin === convertToUnix(endDate)
+        ) {
+          console.log("SHORTEN ANTELINE");
+          anteLine.array_options.options_lin_datefin =
+            convertToUnix(anteStartDate);
+          anteLine.qty = Number(anteLine.qty) - lengthMax;
           dispatch(
-            removeOrderLine(order.id, line.id, order.socid, month, token)
+            updateOrderLine(
+              anteLine.commande_id,
+              anteLine.id,
+              anteLine,
+              order.socid,
+              month,
+              token
+            )
           );
-        });
+        } else {
+          console.log("isANTELINE: DELETE WEEKLINE");
+          dispatch(
+            removeOrderLine(
+              order.id,
+              selectedLines[0].id,
+              order.socid,
+              month,
+              token
+            )
+          );
+        }
+      } else if (postLine.length === 1) {
+        // POSTLINE
+        postLine = {
+          ...postLine[0],
+          array_options: { ...postLine[0].array_options },
+        };
+        if (
+          postLine.array_options.options_lin_datedebut ===
+          convertToUnix(startDate)
+        ) {
+          console.log("SHORTEN POSTLINE");
+          postLine.array_options.options_lin_datedebut =
+            convertToUnix(postEndDate);
+          postLine.qty = Number(postLine.qty) - lengthMax;
+          dispatch(
+            updateOrderLine(
+              postLine.commande_id,
+              postLine.id,
+              postLine,
+              order.socid,
+              month,
+              token
+            )
+          );
+        } else {
+          console.log("DELETE WEEKLINE POSTLINE");
+          dispatch(
+            removeOrderLine(
+              order.id,
+              selectedLines[0].id,
+              order.socid,
+              month,
+              token
+            )
+          );
+        }
+      } else {
+        // Sinon, on supprime la weekLine
+        dispatch(
+          removeOrderLine(
+            order.id,
+            selectedLines[0].id,
+            order.socid,
+            month,
+            token
+          )
+        );
       }
-      dispatch(
-        addOrderLine(
-          order,
-          month,
-          {
+    } else {
+      if (anteLine.length === 1 && postLine.length === 1) {
+        //ANTELINE && POSTLINE
+        console.log("ANTELINE & POSTLINE");
+        anteLine = {
+          ...anteLine[0],
+          array_options: { ...anteLine[0].array_options },
+        };
+        postLine = {
+          ...postLine[0],
+          array_options: { ...postLine[0].array_options },
+        };
+        const overflowingAnteDays =
+          (anteLine.array_options.options_lin_datefin -
+            convertToUnix(anteStartDate)) /
+          (24 * 3600);
+        const overflowingPostDays =
+          (convertToUnix(postEndDate) -
+            postLine.array_options.options_lin_datedebut) /
+          (24 * 3600);
+        if (
+          anteLine.array_options.options_lin_room === regimeId &&
+          postLine.array_options.options_lin_room === regimeId
+        ) {
+          console.log("/// HERE ///");
+          const addDays =
+            (postLine.array_options.options_lin_datefin -
+              convertToUnix(endDate)) /
+            (24 * 3600);
+          anteLine.array_options.options_lin_datefin =
+            postLine.array_options.options_lin_datefin;
+          anteLine.qty =
+            Number(anteLine.qty) + 7 - overflowingAnteDays + addDays;
+          dispatch(
+            removeOrderLine(order.id, postLine.id, order.socid, month, token)
+          );
+          dispatch(
+            updateOrderLine(
+              anteLine.commande_id,
+              anteLine.id,
+              anteLine,
+              order.socid,
+              month,
+              token
+            )
+          );
+        } else if (
+          anteLine.array_options.options_lin_room === regimeId &&
+          postLine.array_options.options_lin_room !== regimeId
+        ) {
+          anteLine.array_options.options_lin_datefin = convertToUnix(endDate);
+          anteLine.qty = Number(anteLine.qty) + lengthMax - overflowingAnteDays;
+
+          dispatch(
+            updateOrderLine(
+              anteLine.commande_id,
+              anteLine.id,
+              anteLine,
+              order.socid,
+              month,
+              token
+            )
+          );
+
+          postLine.array_options.options_lin_datedebut =
+            convertToUnix(postEndDate);
+          postLine.qty = Number(postLine.qty) - overflowingPostDays;
+          dispatch(
+            updateOrderLine(
+              postLine.commande_id,
+              postLine.id,
+              postLine,
+              order.socid,
+              month,
+              token
+            )
+          );
+        } else if (
+          anteLine.array_options.options_lin_room !== regimeId &&
+          postLine.array_options.options_lin_room === regimeId
+        ) {
+          anteLine.array_options.options_lin_datefin =
+            convertToUnix(anteStartDate);
+          anteLine.qty = Number(anteLine.qty) - overflowingAnteDays;
+          dispatch(
+            updateOrderLine(
+              anteLine.commande_id,
+              anteLine.id,
+              anteLine,
+              order.socid,
+              month,
+              token
+            )
+          );
+          postLine.array_options.options_lin_datedebut =
+            convertToUnix(startDate);
+          postLine.qty = Number(postLine.qty) + lengthMax - overflowingPostDays;
+          dispatch(
+            updateOrderLine(
+              postLine.commande_id,
+              postLine.id,
+              postLine,
+              order.socid,
+              month,
+              token
+            )
+          );
+        } else {
+          anteLine.array_options.options_lin_datefin =
+            convertToUnix(anteStartDate);
+          anteLine.qty = Number(anteLine.qty) - overflowingAnteDays;
+          dispatch(
+            updateOrderLine(
+              anteLine.commande_id,
+              anteLine.id,
+              anteLine,
+              order.socid,
+              month,
+              token
+            )
+          );
+          postLine.array_options.options_lin_datedebut =
+            convertToUnix(postEndDate);
+          postLine.qty = Number(postLine.qty) - overflowingPostDays;
+          // dispatch update and addorderline
+          const newWeekLine = {
             array_options: {
               options_lin_room: regimeId,
               options_lin_intakeplace: String(place.rowid),
@@ -203,14 +472,168 @@ function App() {
             qty: lengthMax,
             subprice: getMealPrice(id),
             remise_percent: 0,
-          },
-          token
-        )
-      );
+          };
+          dispatch(
+            updateOrderLineandAddOrderline(
+              postLine.commande_id,
+              postLine.id,
+              postLine,
+              month,
+              order,
+              newWeekLine,
+              token
+            )
+          );
+        }
+      } else if (anteLine.length === 1) {
+        //ANTELINE
+        console.log("ANTELINE");
+        anteLine = {
+          ...anteLine[0],
+          array_options: { ...anteLine[0].array_options },
+        };
+        if (anteLine.array_options.options_lin_room === regimeId) {
+          const overflowingDays =
+            (anteLine.array_options.options_lin_datefin -
+              convertToUnix(anteStartDate)) /
+            (24 * 3600);
+          anteLine.array_options.options_lin_datefin = convertToUnix(endDate);
+          anteLine.qty = Number(anteLine.qty) + lengthMax - overflowingDays;
+          dispatch(
+            updateOrderLine(
+              anteLine.commande_id,
+              anteLine.id,
+              anteLine,
+              order.socid,
+              month,
+              token
+            )
+          );
+        } else {
+          console.log("ANTELINE NEW REGIME");
+          const overflowingDays =
+            (anteLine.array_options.options_lin_datefin -
+              convertToUnix(anteStartDate)) /
+            (24 * 3600);
+          anteLine.array_options.options_lin_datefin =
+            convertToUnix(anteStartDate);
+          anteLine.qty = Number(anteLine.qty) - overflowingDays;
+          const newWeekLine = {
+            array_options: {
+              options_lin_room: regimeId,
+              options_lin_intakeplace: String(place.rowid),
+              options_lin_datedebut: convertToUnix(startDate),
+              options_lin_datefin: convertToUnix(endDate),
+            },
+            fk_product: String(id + 1),
+            label: getMealLabel(id),
+            qty: lengthMax,
+            subprice: getMealPrice(id),
+            remise_percent: 0,
+          };
+          dispatch(
+            updateOrderLineandAddOrderline(
+              anteLine.commande_id,
+              anteLine.id,
+              anteLine,
+              month,
+              order,
+              newWeekLine,
+              token
+            )
+          );
+        }
+      } else if (postLine.length === 1) {
+        // POSTLINE
+        console.log("POSTLINE");
+        postLine = {
+          ...postLine[0],
+          array_options: { ...postLine[0].array_options },
+        };
+        if (postLine.array_options.options_lin_room === regimeId) {
+          const overflowingDays =
+            (convertToUnix(postEndDate) -
+              postLine.array_options.options_lin_datedebut) /
+            (24 * 3600);
+          postLine.array_options.options_lin_datedebut =
+            convertToUnix(startDate);
+          postLine.qty = Number(postLine.qty) + lengthMax - overflowingDays;
+          dispatch(
+            updateOrderLine(
+              postLine.commande_id,
+              postLine.id,
+              postLine,
+              order.socid,
+              month,
+              token
+            )
+          );
+        } else {
+          const overflowingDays =
+            (convertToUnix(postEndDate) -
+              postLine.array_options.options_lin_datedebut) /
+            (24 * 3600);
+          postLine.array_options.options_lin_datedebut =
+            convertToUnix(postEndDate);
+          postLine.qty = Number(postLine.qty) - overflowingDays;
+          const newWeekLine = {
+            array_options: {
+              options_lin_room: regimeId,
+              options_lin_intakeplace: String(place.rowid),
+              options_lin_datedebut: convertToUnix(startDate),
+              options_lin_datefin: convertToUnix(endDate),
+            },
+            fk_product: String(id + 1),
+            label: getMealLabel(id),
+            qty: lengthMax,
+            subprice: getMealPrice(id),
+            remise_percent: 0,
+          };
+          dispatch(
+            updateOrderLineandAddOrderline(
+              postLine.commande_id,
+              postLine.id,
+              postLine,
+              month,
+              order,
+              newWeekLine,
+              token
+            )
+          );
+        }
+      } else {
+        // Add week line
+        dispatch(
+          addOrderLine(
+            order,
+            month,
+            {
+              array_options: {
+                options_lin_room: regimeId,
+                options_lin_intakeplace: String(place.rowid),
+                options_lin_datedebut: convertToUnix(startDate),
+                options_lin_datefin: convertToUnix(endDate),
+              },
+              fk_product: String(id + 1),
+              label: getMealLabel(id),
+              qty: lengthMax,
+              subprice: getMealPrice(id),
+              remise_percent: 0,
+            },
+            token
+          )
+        );
+      }
+      if (selectedLines.length > 0) {
+        selectedLines.map((line) => {
+          dispatch(
+            removeOrderLine(order.id, line.id, order.socid, month, token)
+          );
+        });
+      }
     }
   };
 
-  // determine start and end date:
   return (
     <>
       <Header token={token} />
@@ -354,6 +777,7 @@ function App() {
                               init_week,
                               firstWeekDay,
                               place.rowid,
+                              mm,
                               month
                             ).length === lengthMax ? (
                               <FontAwesomeIcon

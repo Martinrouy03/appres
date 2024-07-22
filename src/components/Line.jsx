@@ -84,8 +84,8 @@ const Line = ({
       } = newLine.array_options;
       let qty = Number(line.qty);
 
-      // ----- SUPPRESSION de ligne de commande ---- //
       if (
+        // ----- SUPPRESSION de ligne de commande ---- //
         convertToUnix(selectedDate) === options_lin_datedebut &&
         options_lin_datedebut === options_lin_datefin &&
         options_lin_intakeplace === String(place.rowid)
@@ -226,7 +226,14 @@ const Line = ({
         options_lin_intakeplace === String(place.rowid)
       ) {
         dispatch(
-          orderBreakLine(order, line, convertToUnix(selectedDate), month, token)
+          orderBreakLine(
+            order,
+            line,
+            convertToUnix(selectedDate),
+            0,
+            month,
+            token
+          )
         );
       } else {
         count++;

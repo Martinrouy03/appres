@@ -9,10 +9,11 @@ export const filterMeals = (
   init_week,
   firstDay,
   place,
+  mm,
   month
 ) => {
   return meals.filter((item) =>
-    week === 1 || week === init_week
+    (mm === month && week === init_week) || week === 1
       ? item[item.indexOf("d") + 1] >= firstDay &&
         item.startsWith(`m${id}_M${month}_w${week}`) &&
         item.endsWith(`${place}`)
@@ -21,6 +22,8 @@ export const filterMeals = (
   );
 };
 export function computeLengthMax(
+  mm,
+  month,
   week,
   init_week,
   maxWeeks,
@@ -28,7 +31,7 @@ export function computeLengthMax(
   lastWeekDay
 ) {
   let lengthMax = 7; // used for weekButtons display
-  if (week === init_week || week === 1) {
+  if ((mm === month && week === init_week) || week === 1) {
     lengthMax = 7 - firstWeekDay + 1;
   } else if (week === maxWeeks) {
     lengthMax = lastWeekDay || 7;

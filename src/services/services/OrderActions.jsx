@@ -169,57 +169,7 @@ export const updateOrderLineFailure = (error) => ({
 export function addOrderLine(order, month, orderline, token) {
   return (dispatch) => {
     console.log("addOrderLineBegin " + order.id);
-
-    // if (!order.customer.price_level) {
-    //   dispatch(
-    //     addOrderLineFailure({
-    //       code: "600",
-    //       message:
-    //         "Veuillez sélectionner le niveau de revenu dans la fiche adhérent",
-    //     })
-    //   );
-    //   return;
-    // }
-    // if (!orderline.fk_product) {
-    //   dispatch(
-    //     addOrderLineFailure({
-    //       code: "600",
-    //       message: "Veuillez choisir un produit",
-    //     })
-    //   );
-    //   return;
-    // }
-
     dispatch(addOrderLineBegin());
-    // *** Get the product
-    // let product = getProductFromId(orderline.fk_product);
-
-    // *** Check product price
-    // let price = 0;
-    // if (product) {
-    //   price = product.multiprices_ttc[parseInt(order.customer.price_level)];
-    // } else {
-    //   dispatch(
-    //     addOrderLineFailure({
-    //       code: "600",
-    //       message:
-    //         "ajout d'une ligne de commande : produit non trouvé, veuillez contacter l'administrateur",
-    //     })
-    //   );
-    //   return;
-    // }
-    // if (price === undefined) price = product[0].multiprices_ttc[1];
-
-    // if (price === undefined) {
-    //   dispatch(
-    //     addOrderLineFailure({
-    //       code: "600",
-    //       message:
-    //         "Le prix du produit n'a pas pu être déterminé - code produit : " +
-    //         orderline.fk_product,
-    //     })
-    //   );
-    // }
     return axios
       .post(
         const_apiurl + "orders/" + order.id + "/lines" + "?DOLAPIKEY=" + token,
@@ -372,7 +322,14 @@ export const removeOrderLineFailure = (error) => ({
 
 // ----------- SPLIT LINE INTO TWO -----------------//
 
-export function orderBreakLine(order, orderline, breakDate, month, token) {
+export function orderBreakLine(
+  order,
+  orderline,
+  breakDate,
+  isBridgeLine,
+  month,
+  token
+) {
   return (dispatch) => {
     console.log("setorderBreakLine :  " + orderline.id);
     const newEndDate = breakDate - 24 * 3600;
@@ -394,7 +351,13 @@ export function orderBreakLine(order, orderline, breakDate, month, token) {
     locOrderLine.qty = diffInDays;
 
     /** Create the new line */
-    let newStartDate = breakDate + 24 * 3600;
+    let newStartDate = breakDate;
+    if (isBridgeLine) {
+      newStartDate = breakDate + 7 * 24 * 3600;
+    } else {
+      newStartDate = breakDate + 1 * 24 * 3600;
+    }
+    // let newStartDate = breakDate + 24 * 3600;
     let diffInDays2 = (endDate - newStartDate) / (60 * 60 * 24) + 1;
     /** Send to database */
     dispatch(
