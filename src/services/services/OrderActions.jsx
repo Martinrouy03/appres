@@ -192,7 +192,6 @@ export function addOrderLine(order, month, orderline, token) {
       .catch((error) => {
         // *** an 404 error is sent when Dolibarr didn't find invoices
         console.log("addOrderLineFailure");
-        // console.log(error.response);
         if (error.response) {
           if (error.response.status === 404) {
             dispatch(

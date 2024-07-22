@@ -359,7 +359,6 @@ function App() {
           anteLine.array_options.options_lin_room === regimeId &&
           postLine.array_options.options_lin_room === regimeId
         ) {
-          console.log("/// HERE ///");
           const addDays =
             (postLine.array_options.options_lin_datefin -
               convertToUnix(endDate)) /

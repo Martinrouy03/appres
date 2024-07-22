@@ -190,7 +190,6 @@ export const getMealPrice = (code) => {
   }
 };
 export const enableDay = (shift, shiftMin, shiftMax) => {
-  // console.log("shift: ", shift, "shiftMin: ", shiftMin, "shiftMax: ", shiftMax);
   return (
     (shiftMin === -1 && shift >= 0 && shift <= shiftMax) ||
     (shift > shiftMin && shift <= shiftMax)
@@ -224,19 +223,6 @@ export const computeMaxWeeks = (year, month, previousMonth) => {
         break;
       }
       maxWeeks--;
-
-      console.log(
-        new Date(
-          year,
-          month - 1,
-          lastDayfromPreviousMonth.getDate() - 7 * maxWeeks - weekDay + 1
-        ).toDateString(),
-        new Date(
-          year,
-          month - 1,
-          lastDayfromPreviousMonth.getDate() - 7 * maxWeeks + 7 - weekDay
-        ).toDateString()
-      );
     }
     maxWeeks++;
   } else {
@@ -251,7 +237,6 @@ export const computeMaxWeeks = (year, month, previousMonth) => {
     }
     // maxWeeks--;
   }
-  // console.log("output maxweeks function: ", maxWeeks);
   return maxWeeks;
 };
 export const convertLinesToArray = (orderLines) => {
