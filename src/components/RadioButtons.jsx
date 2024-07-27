@@ -3,9 +3,14 @@ import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import FormControl from "@mui/material/FormControl";
-import config from "../app/configuration.json";
+// import config from "../app/configuration.json";
+import { useSelector, shallowEqual } from "react-redux";
 
 export default function RadioButtons({ regimes, regimeId, setRegimeId }) {
+  const config = useSelector(
+    (state) => state.configurationReducer.configuration,
+    shallowEqual
+  );
   const regimeColors = config.regimeColors;
   return (
     <FormControl>

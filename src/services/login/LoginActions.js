@@ -19,6 +19,7 @@ export function loguser(username, password) {
       ) // fetch token
       .then((json) => {
         console.log("loguserSuccess : ");
+        console.log(json);
         let login = {
           code: json.data.success.code,
           token: json.data.success.token,
@@ -36,7 +37,7 @@ export function loguser(username, password) {
           )
           .then((json) => {
             console.log("fetchEmailSuccess : ");
-            console.log(json.data);
+            // console.log(json.data);
             const email = json.data[0].email;
             localStorage.setItem("userEmail", email);
             axios

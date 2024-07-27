@@ -6,8 +6,9 @@ import {
   UPDATE_ORDERLINE_SUCCESS,
   UPDATE_ORDERLINE_FAILURE,
 } from "./OrderActions";
-import moment from "moment";
-import config from "../../app/configuration.json";
+// import moment from "moment";
+// import config from "../../app/configuration.json";
+// import { getConfigurationValue } from "./ConfigurationActions";
 
 const initialState = {
   order: {
@@ -23,16 +24,14 @@ const initialState = {
       array_options: { options_civility: "" },
     },
   },
-  meals: [],
-  disabledMeals: [],
   month: 0,
   loading: false,
   error: null,
   orderToCloseEnd: false,
 };
 export default function OrderReducer(state = initialState, action) {
-  const codeRepas = config.codeRepas;
-
+  // const codeRepas = config.codeRepas;
+  // const codeRepas = getConfigurationValue("codeRepas");
   switch (action.type) {
     // *** Get Order
     case GET_ORDER_BEGIN:
@@ -57,17 +56,17 @@ export default function OrderReducer(state = initialState, action) {
 
     case GET_ORDER_SUCCESS:
       let orderLines = {};
-      let month = "";
+      // let month = "";
       orderLines = action.payload.order.lines;
-      const refline = orderLines.filter((line) => line.ref === codeRepas);
-      month = new Date(
-        moment.unix(refline[0].array_options.options_lin_datedebut)
-      ).getMonth();
+      // const refline = orderLines.filter((line) => line.ref === codeRepas);
+      // month = new Date(
+      //   moment.unix(refline[0].array_options.options_lin_datedebut)
+      // ).getMonth();
       return {
         ...state,
         loading: false,
         order: action.payload.order,
-        month: month,
+        // month: month,
       };
 
     case GET_ORDER_FAILURE:

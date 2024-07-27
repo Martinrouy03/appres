@@ -1,6 +1,6 @@
 import moment from "moment";
 import { store } from "../app/App";
-import config from "../app/configuration.json";
+// import config from "../app/configuration.json";
 
 export const filterMeals = (
   meals,
@@ -239,8 +239,8 @@ export const computeMaxWeeks = (year, month, previousMonth) => {
   }
   return maxWeeks;
 };
-export const convertLinesToArray = (orderLines) => {
-  const codeRepas = config.codeRepas;
+export const convertLinesToArray = (orderLines, codeRepas) => {
+  // const codeRepas = config.codeRepas;
   let week = 1;
   const date = new Date(); // date du jour
   const mm = date.getMonth(); // Mois actuel

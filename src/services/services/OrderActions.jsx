@@ -1,11 +1,13 @@
 import { const_apiurl } from "../../Constant.js";
 import axios from "axios";
 import moment from "moment";
-import config from "../../app/configuration.json";
+// import config from "../../app/configuration.json";
+import { getConfigurationValue } from "./ConfigurationActions.jsx";
 
 export function getOrder(customerID, month, setCommandNb, token) {
   const currentMonth = new Date().getMonth();
-  const codeRepas = config.codeRepas;
+  // const codeRepas = config.codeRepas;
+  const codeRepas = getConfigurationValue("codeRepas");
   return (dispatch) => {
     console.log("getOrderBegin : Customer " + customerID);
     dispatch(getOrderBegin());
@@ -25,6 +27,7 @@ export function getOrder(customerID, month, setCommandNb, token) {
             // Number(order.statut) > 0 &&
             order.lines.length > 0 //&&
         );
+        console.log("codeRepas: ", codeRepas);
         orders = orders.filter((order) =>
           order.lines.some(
             (line) =>
@@ -45,7 +48,6 @@ export function getOrder(customerID, month, setCommandNb, token) {
               moment.unix(order.lines[0].array_options.options_lin_datedebut) //
             ).getMonth() === month
         );
-
         dispatch(getOrderSuccess(order[0]));
 
         // *** Reload the customer : if there were changes in the order, the copy of the order in the customer is updated. Usefull for function such as getMealforadate etc

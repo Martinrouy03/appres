@@ -17,7 +17,7 @@ import {
   convertToUnix,
   enableDay,
 } from "../utils/functions";
-import config from "../app/configuration.json";
+// import config from "../app/configuration.json";
 const dayToMs = 24 * 3600 * 1000;
 const Line = ({
   id,
@@ -29,9 +29,13 @@ const Line = ({
   disabledMeals,
   regimeId,
 }) => {
-  const regimeColors = config.regimeColors;
   const dispatch = useDispatch();
   const order = useSelector((state) => state.orderReducer.order, shallowEqual);
+  const config = useSelector(
+    (state) => state.configurationReducer.configuration,
+    shallowEqual
+  );
+  const regimeColors = config.regimeColors;
   const regimes = useSelector(
     (state) => state.regimesReducer.regimes,
     shallowEqual

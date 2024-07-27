@@ -40,6 +40,7 @@ import {
 } from "../services/services/OrderActions";
 import { getPlaces } from "../services/services/PlacesActions";
 import { getRegimes } from "../services/services/RegimesActions";
+import { getConfiguration } from "../services/services/ConfigurationActions";
 // Composants
 import { CircularProgress } from "@mui/material";
 import RadioButtons from "../components/RadioButtons";
@@ -49,14 +50,17 @@ import LoginModal from "../components/LoginModal";
 
 // *** Rsdux Initialisation, store building
 import { configureStore } from "@reduxjs/toolkit";
+import ConfigurationReducer from "../services/services/ConfigurationReducer";
 import OrderReducer from "../services/services/OrderReducer";
 import PlacesReducer from "../services/services/PlacesReducer";
 import RegimesReducer from "../services/services/RegimesReducer";
 import LoginReducer from "../services/login/LoginReducer";
 
 library.add(faChevronRight, faChevronLeft, faChevronUp, faCircleXmark);
+
 export const store = configureStore({
   reducer: {
+    configurationReducer: ConfigurationReducer,
     orderReducer: OrderReducer,
     placesReducer: PlacesReducer,
     regimesReducer: RegimesReducer,
@@ -79,10 +83,12 @@ function App() {
   const init_week = Math.ceil(monthDay / 7);
 
   // State instantiations:
+  // const [configLoaded, setConfigLoaded] = useState(false);
   const [regimeId, setRegimeId] = useState("4");
   const [commandNb, setCommandNb] = useState(0);
   const [week, setWeek] = useState(init_week);
   const [month, setMonth] = useState(mm);
+  const [lang, setLang] = useState("FR");
 
   // More date variables
   const newDate = new Date(year, month, 1);
@@ -100,6 +106,10 @@ function App() {
   );
 
   // Selector instantiations:
+  const config = useSelector(
+    (state) => state.configurationReducer.configuration,
+    shallowEqual
+  );
   const order = useSelector((state) => state.orderReducer.order, shallowEqual);
   const places = useSelector(
     (state) => state.placesReducer.places,
@@ -136,11 +146,13 @@ function App() {
   const maxid = ids[ids.length - 1]; // maxid is used to identify the last Line component of each Place table, in order to apply specific css (border-radius)
 
   useEffect(() => {
+    dispatch(getConfiguration());
     token && dispatch(getPlaces(token));
     token && dispatch(getRegimes(token));
-    token && dispatch(getOrder(userId, month, setCommandNb, token));
-  }, [month, user, modalClose]);
-
+    token &&
+      config.codeRepas &&
+      dispatch(getOrder(userId, month, setCommandNb, token));
+  }, [month, user, modalClose, config]);
   const handleWeekButtons = (id, month, week, place, suppress) => {
     const shift = computeShift(
       mm,
@@ -648,6 +660,7 @@ function App() {
                   regimes={regimes}
                   regimeId={regimeId}
                   setRegimeId={setRegimeId}
+                  lang={lang}
                 />
               )}
             </div>

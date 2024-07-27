@@ -12,6 +12,7 @@ const LoginModal = () => {
   const handleSubmit = async (username, password) => {
     dispatch(loguser(username, password));
   };
+
   return (
     <div
       className="modal-root"
