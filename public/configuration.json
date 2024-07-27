@@ -6,6 +6,11 @@
     { "code": "MPT_WMILK", "color": "brown" }
   ],
   "codeRepas": "STA24_9990",
+  "deadline": {
+    "breakfast": 7,
+    "lunch": 10,
+    "dinner": 17
+  },
   "language": {
     "FR": {
       "title": "Réservation Repas",
@@ -45,9 +50,9 @@
       ],
 
       "meals": {
-        "breakfast": "Breakfast",
-        "lunch": "Lunch",
-        "dinner": "Dinner"
+        "breakfast": "Petit-déjeuner",
+        "lunch": "Déjeuner",
+        "dinner": "Dîner"
       }
     },
     "EN": {

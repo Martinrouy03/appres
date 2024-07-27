@@ -640,7 +640,6 @@ function App() {
       }
     }
   };
-  // console.log(config.language && config.language[lang].month[month]);
   return (
     <>
       <Header token={token} lang={lang} setLang={setLang} />
@@ -655,7 +654,6 @@ function App() {
             <div className="center">
               {order.lines && (
                 <RadioButtons
-                  // regimes={regimes}
                   regimeId={regimeId}
                   setRegimeId={setRegimeId}
                   lang={lang}
@@ -666,6 +664,7 @@ function App() {
               <div className="center">
                 {month > mm && (
                   <FontAwesomeIcon
+                    id="chevron"
                     onClick={() => {
                       if (mm === month - 1) {
                         setWeek(Math.ceil(monthDay / 7));
@@ -676,26 +675,25 @@ function App() {
                     }}
                     icon="fa-solid fa-chevron-left"
                     size="xl"
-                    style={{ color: "#ab0032" }}
                   />
                 )}
-                {/* <h1>{convertMonth(month)}</h1> */}
                 <h1>{config.language && config.language[lang].month[month]}</h1>
                 {month - mm < commandNb - 1 && (
                   <FontAwesomeIcon
+                    id="chevron"
                     onClick={() => {
                       setWeek(1);
                       setMonth(month + 1);
                     }}
                     icon="fa-solid fa-chevron-right"
                     size="xl"
-                    style={{ color: "#ab0032" }}
                   />
                 )}
               </div>
               <div className="center">
                 {!(month === mm && week === init_week) && (
                   <FontAwesomeIcon
+                    id="chevron"
                     onClick={() => {
                       if (week > 1) {
                         setWeek(week - 1);
@@ -707,12 +705,12 @@ function App() {
                     }}
                     icon="fa-solid fa-chevron-left"
                     size="xl"
-                    style={{ color: "#ab0032" }}
                   />
                 )}
                 <h1>{config.language && config.language[lang].week}</h1>
                 {!(month - mm === commandNb - 1 && week === maxWeeks) && (
                   <FontAwesomeIcon
+                    id="chevron"
                     onClick={() => {
                       if (week < maxWeeks) {
                         setWeek(week + 1);
@@ -723,7 +721,6 @@ function App() {
                     }}
                     icon="fa-solid fa-chevron-right"
                     size="xl"
-                    style={{ color: "#ab0032" }}
                   />
                 )}
               </div>
@@ -802,12 +799,21 @@ function App() {
                                 }}
                               />
                             ) : (
-                              <FontAwesomeIcon
-                                icon="fa-solid fa-chevron-left"
-                                onClick={() => {
-                                  handleWeekButtons(id, month, week, place, 0);
-                                }}
-                              />
+                              <div id="chevron">
+                                <FontAwesomeIcon
+                                  icon="fa-solid fa-chevron-left"
+                                  id="quickSelect"
+                                  onClick={() => {
+                                    handleWeekButtons(
+                                      id,
+                                      month,
+                                      week,
+                                      place,
+                                      0
+                                    );
+                                  }}
+                                />
+                              </div>
                             )}
                           </div>
                         );

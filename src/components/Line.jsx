@@ -1,5 +1,3 @@
-import { convertDay } from "../utils/functions";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useSelector, shallowEqual, useDispatch } from "react-redux";
 import moment from "moment";
 import {
@@ -17,7 +15,6 @@ import {
   convertToUnix,
   enableDay,
 } from "../utils/functions";
-// import config from "../app/configuration.json";
 const dayToMs = 24 * 3600 * 1000;
 const Line = ({
   id,
@@ -44,6 +41,7 @@ const Line = ({
   let token = localStorage.getItem("token") || "";
   const day = date.getDay() || 7;
   const mm = date.getMonth();
+  const hh = date.getHours();
   const year = mm < month ? date.getFullYear() : date.getFullYear() + 1;
   const firstDay = mm === month ? date : new Date(year, month, 1); // //Jour J du mois actuel, et premier jour du mois suivant
   const lastDay = new Date(year, month + 1, 0); // Dernier jour du mois
@@ -307,7 +305,9 @@ const Line = ({
         <div
           key={i}
           style={{
-            color: enableDay(shift, shiftMin, shiftMax) ? "black" : "lightgrey",
+            color: enableDay(shift, shiftMin, shiftMax, id, hh, config.deadline)
+              ? "black"
+              : "lightgrey",
           }}
         >
           {/* {convertDay(i)} */}
@@ -322,34 +322,12 @@ const Line = ({
           className="num"
           key={i}
           style={{
-            color: enableDay(shift, shiftMin, shiftMax) ? "black" : "lightgrey",
+            color: enableDay(shift, shiftMin, shiftMax, id, hh, config.deadline)
+              ? "black"
+              : "lightgrey",
           }}
         >
           {dateShift.getDate()}
-        </div>
-      );
-    } else if (id === "buttons") {
-      line.push(
-        <div key={i}>
-          {enableDay(shift, shiftMin, shiftMax) &&
-            (meals.filter((item) => item.includes(`M${month}_w${week}_d${i}`))
-              .length === 3 ? (
-              <FontAwesomeIcon
-                icon="fa-regular fa-circle-xmark"
-                size="2xl"
-                style={{ color: "#ab0032" }}
-                // onClick={() => {
-                //   handleDayButtons(shift);
-                // }}
-              />
-            ) : (
-              <FontAwesomeIcon
-                icon="fa-solid fa-chevron-up"
-                // onClick={() => {
-                //   handleDayButtons(shift);
-                // }}
-              />
-            ))}
         </div>
       );
     } else {
@@ -373,7 +351,10 @@ const Line = ({
       const disabledMeal = disabledMeals.includes(
         `m${id}_M${month}_w${week}_d${i}_p${place.rowid}`
       );
-      if (enableDay(shift, shiftMin, shiftMax) && !disabledMeal) {
+      if (
+        enableDay(shift, shiftMin, shiftMax, id, hh, config.deadline) &&
+        !disabledMeal
+      ) {
         line.push(
           <div key={i}>
             <input

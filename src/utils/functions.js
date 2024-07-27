@@ -1,6 +1,5 @@
 import moment from "moment";
 import { store } from "../app/App";
-// import config from "../app/configuration.json";
 
 export const filterMeals = (
   meals,
@@ -58,79 +57,79 @@ export function computeDateShift(mm, month, year, shift) {
   }
   return dateShift;
 }
-export function convertMonth(mm) {
-  let month = "";
-  switch (mm) {
-    case 0:
-      month = "Janvier";
-      break;
-    case 1:
-      month = "Février";
-      break;
-    case 2:
-      month = "Mars";
-      break;
-    case 3:
-      month = "Avril";
-      break;
-    case 4:
-      month = "Mai";
-      break;
-    case 5:
-      month = "Juin";
-      break;
-    case 6:
-      month = "Juillet";
-      break;
-    case 7:
-      month = "Août";
-      break;
-    case 8:
-      month = "Septembre";
-      break;
-    case 9:
-      month = "Octobre";
-      break;
-    case 10:
-      month = "Novembre";
-      break;
-    case 11:
-      month = "Décembre";
-      break;
-    default:
-      month = mm;
-  }
-  return month;
-}
-export function convertDay(d) {
-  let weekday = "";
-  switch (d) {
-    case 1:
-      weekday = "Lundi";
-      break;
-    case 2:
-      weekday = "Mardi";
-      break;
-    case 3:
-      weekday = "Mercredi";
-      break;
-    case 4:
-      weekday = "Jeudi";
-      break;
-    case 5:
-      weekday = "Vendredi";
-      break;
-    case 6:
-      weekday = "Samedi";
-      break;
-    case 7:
-      weekday = "Dimanche";
-      break;
-    default:
-      weekday = "??";
-  }
-  return weekday;
-}
+// export function convertMonth(mm) {
+//   let month = "";
+//   switch (mm) {
+//     case 0:
+//       month = "Janvier";
+//       break;
+//     case 1:
+//       month = "Février";
+//       break;
+//     case 2:
+//       month = "Mars";
+//       break;
+//     case 3:
+//       month = "Avril";
+//       break;
+//     case 4:
+//       month = "Mai";
+//       break;
+//     case 5:
+//       month = "Juin";
+//       break;
+//     case 6:
+//       month = "Juillet";
+//       break;
+//     case 7:
+//       month = "Août";
+//       break;
+//     case 8:
+//       month = "Septembre";
+//       break;
+//     case 9:
+//       month = "Octobre";
+//       break;
+//     case 10:
+//       month = "Novembre";
+//       break;
+//     case 11:
+//       month = "Décembre";
+//       break;
+//     default:
+//       month = mm;
+//   }
+//   return month;
+// }
+// export function convertDay(d) {
+//   let weekday = "";
+//   switch (d) {
+//     case 1:
+//       weekday = "Lundi";
+//       break;
+//     case 2:
+//       weekday = "Mardi";
+//       break;
+//     case 3:
+//       weekday = "Mercredi";
+//       break;
+//     case 4:
+//       weekday = "Jeudi";
+//       break;
+//     case 5:
+//       weekday = "Vendredi";
+//       break;
+//     case 6:
+//       weekday = "Samedi";
+//       break;
+//     case 7:
+//       weekday = "Dimanche";
+//       break;
+//     default:
+//       weekday = "??";
+//   }
+//   return weekday;
+// }
 export const getMealCode = (label) => {
   switch (label) {
     case "Petit-déjeuner":
@@ -189,11 +188,22 @@ export const getMealPrice = (code) => {
       return 0;
   }
 };
-export const enableDay = (shift, shiftMin, shiftMax) => {
-  return (
-    (shiftMin === -1 && shift >= 0 && shift <= shiftMax) ||
-    (shift > shiftMin && shift <= shiftMax)
-  );
+export const enableDay = (shift, shiftMin, shiftMax, id, hh, deadline) => {
+  console.log(deadline);
+  if (shift === 0) {
+    if (id === 1) {
+      return hh < deadline.breakfast;
+    } else if (id === 2) {
+      return hh < deadline.lunch;
+    } else {
+      return hh < deadline.dinner;
+    }
+  } else {
+    return (
+      (shiftMin === -1 && shift >= 0 && shift <= shiftMax) ||
+      (shift > shiftMin && shift <= shiftMax)
+    );
+  }
 };
 export const computeMaxWeeks = (year, month, previousMonth) => {
   let maxWeeks = 0;

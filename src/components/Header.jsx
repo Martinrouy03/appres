@@ -16,7 +16,6 @@ const Header = ({ token, lang, setLang }) => {
           name=""
           id="language"
           onChange={(e) => {
-            // console.log(e.target.value);
             setLang(e.target.value);
           }}
         >
