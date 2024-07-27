@@ -9,80 +9,88 @@
   "language": {
     "FR": {
       "title": "Réservation Repas",
-      "signgin": "Se connecter",
-      "month": {
-        "jan": "Janvier",
-        "feb": "Février",
-        "mar": "Mars",
-        "apr": "Avril",
-        "may": "Mai",
-        "jun": "Juin",
-        "jui": "Juillet",
-        "aug": "Août",
-        "sep": "Septembre",
-        "oct": "Octobre",
-        "nov": "Novembre",
-        "dec": "Décembre"
-      },
-      "weekDay": {
-        "mon": "Lundi",
-        "tue": "Mardi",
-        "wed": "Mercredi",
-        "thu": "Jeudi",
-        "fri": "Vendredi",
-        "sat": "Samedi",
-        "sun": "Dimanche"
-      },
+      "signin": "Se connecter",
+      "signout": "Se déconnecter",
+      "signinMessage": "Veuillez vous connecter",
+      "notAvailable": "Réservation indisponible",
+      "month": [
+        "Janvier",
+        "Février",
+        "Mars",
+        "Avril",
+        "Mai",
+        "Juin",
+        "Juillet",
+        "Août",
+        "Septembre",
+        "Octobre",
+        "Novembre",
+        "Décembre"
+      ],
+      "weekDay": [
+        "Lundi",
+        "Mardi",
+        "Mercredi",
+        "Jeudi",
+        "Vendredi",
+        "Samedi",
+        "Dimanche"
+      ],
       "week": "Semaine",
-      "regimes": {
-        "veg": "Végétarien",
-        "gfr": "Sans gluten",
-        "lfr": "Sans lactose",
-        "glf": "Sans gluten et sans lactose"
-      },
+      "regimes": [
+        { "code": "MPT_VEGE", "label": "Végétarien" },
+        { "code": "MPT_WG-WM", "label": "Sans gluten" },
+        { "code": "MPT_WGLUTEN", "label": "Sans lactose" },
+        { "code": "MPT_WMILK", "label": "Sans gluten et sans lactose" }
+      ],
+
       "meals": {
-        "breakfast": "Petit-Déjeuner",
-        "lunch": "Déjeuner",
-        "dinner": "Dîner"
+        "breakfast": "Breakfast",
+        "lunch": "Lunch",
+        "dinner": "Dinner"
       }
     },
     "EN": {
-      "title": "Réservation Repas",
-      "signgin": "Se connecter",
-      "month": {
-        "jan": "Janvier",
-        "feb": "Février",
-        "mar": "Mars",
-        "apr": "Avril",
-        "may": "Mai",
-        "jun": "Juin",
-        "jui": "Juillet",
-        "aug": "Août",
-        "sep": "Septembre",
-        "oct": "Octobre",
-        "nov": "Novembre",
-        "dec": "Décembre"
-      },
-      "weekDay": {
-        "mon": "Lundi",
-        "tue": "Mardi",
-        "wed": "Mercredi",
-        "thu": "Jeudi",
-        "fri": "Vendredi",
-        "sat": "Samedi",
-        "sun": "Dimanche"
-      },
-      "week": "Semaine",
-      "regimes": {
-        "veg": "Végétarien",
-        "gfr": "Sans gluten",
-        "lfr": "Sans lactose",
-        "glf": "Sans gluten et sans lactose"
-      },
+      "title": "Meal Reservation",
+      "signin": "Sign In",
+      "signout": "Sign Out",
+      "signinMessage": "Please Sign In",
+      "notAvailable": "Not Available",
+      "month": [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December"
+      ],
+      "weekDay": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday"
+      ],
+      "week": "Week",
+      "regimes": [
+        { "code": "MPT_VEGE", "label": "Vegetarian" },
+        { "code": "MPT_WG-WM", "label": "Gluten Free" },
+        { "code": "MPT_WGLUTEN", "label": "Lactose Free" },
+        { "code": "MPT_WMILK", "label": "Gluten Free & Lactose Free" }
+      ],
+
       "meals": {
-        "breakfast": "Petit-Déjeuner",
-        "lunch": "Déjeuner",
-        "dinner": "Dîner"
+        "breakfast": "Breakfast",
+        "lunch": "Lunch",
+        "dinner": "Dinner"
       }
     }
   }

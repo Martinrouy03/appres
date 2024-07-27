@@ -115,10 +115,6 @@ function App() {
     (state) => state.placesReducer.places,
     shallowEqual
   );
-  const regimes = useSelector(
-    (state) => state.regimesReducer.regimes,
-    shallowEqual
-  );
   const loading = useSelector(
     (state) => state.orderReducer.loading,
     shallowEqual
@@ -644,20 +640,22 @@ function App() {
       }
     }
   };
-
+  // console.log(config.language && config.language[lang].month[month]);
   return (
     <>
-      <Header token={token} />
+      <Header token={token} lang={lang} setLang={setLang} />
       {!modalClose && !token && <LoginModal />}
       {!token ? (
-        <div className="center">Veuillez vous connecter</div>
+        <div className="center">
+          {config.language && config.language[lang].signinMessage}
+        </div>
       ) : (
         <main className="container">
           <div className="center">
             <div className="center">
-              {regimes && order.lines && (
+              {order.lines && (
                 <RadioButtons
-                  regimes={regimes}
+                  // regimes={regimes}
                   regimeId={regimeId}
                   setRegimeId={setRegimeId}
                   lang={lang}
@@ -681,7 +679,8 @@ function App() {
                     style={{ color: "#ab0032" }}
                   />
                 )}
-                <h1>{convertMonth(month)}</h1>
+                {/* <h1>{convertMonth(month)}</h1> */}
+                <h1>{config.language && config.language[lang].month[month]}</h1>
                 {month - mm < commandNb - 1 && (
                   <FontAwesomeIcon
                     onClick={() => {
@@ -711,7 +710,7 @@ function App() {
                     style={{ color: "#ab0032" }}
                   />
                 )}
-                <h1>Semaine </h1>
+                <h1>{config.language && config.language[lang].week}</h1>
                 {!(month - mm === commandNb - 1 && week === maxWeeks) && (
                   <FontAwesomeIcon
                     onClick={() => {
@@ -752,6 +751,7 @@ function App() {
                             week={week}
                             month={month}
                             place={place}
+                            lang={lang}
                           ></Line>
                           <Line
                             id="dayNum"
@@ -779,6 +779,7 @@ function App() {
                                   meals={meals}
                                   disabledMeals={disabledMeals}
                                   regimeId={regimeId}
+                                  lang={lang}
                                 ></Line>
                               )}
                             </div>
@@ -816,27 +817,10 @@ function App() {
                 );
               })
             ) : (
-              <div className="center">Réservation indisponible</div>
-            )}
-            {/* <div className="buttons">
-              <div className="line">
-                <div
-                  className="left-div"
-                  style={{ backgroundColor: "#FFFFFF" }}
-                >
-                  {order.lines && (
-                    <Line
-                      id="buttons"
-                      date={date}
-                      week={week}
-                      month={month}
-                      meals={meals}
-                      disabledMeals={disabledMeals}
-                    ></Line>
-                  )}
-                </div>
+              <div className="center">
+                {config.language && config.language[lang].notAvailable}
               </div>
-            </div> */}
+            )}
           </div>
         </main>
       )}

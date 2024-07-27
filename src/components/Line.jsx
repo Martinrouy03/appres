@@ -28,6 +28,7 @@ const Line = ({
   meals,
   disabledMeals,
   regimeId,
+  lang,
 }) => {
   const dispatch = useDispatch();
   const order = useSelector((state) => state.orderReducer.order, shallowEqual);
@@ -279,13 +280,13 @@ const Line = ({
       );
       break;
     case 1:
-      line.push(<div>Petit-Déjeuner</div>);
+      line.push(<div>{config.language[lang].meals.breakfast}</div>);
       break;
     case 2:
-      line.push(<div>Déjeuner</div>);
+      line.push(<div>{config.language[lang].meals.lunch}</div>);
       break;
     case 3:
-      line.push(<div>Diner</div>);
+      line.push(<div>{config.language[lang].meals.dinner}</div>);
       break;
     default:
       line.push(<div></div>);
@@ -309,7 +310,8 @@ const Line = ({
             color: enableDay(shift, shiftMin, shiftMax) ? "black" : "lightgrey",
           }}
         >
-          {convertDay(i)}
+          {/* {convertDay(i)} */}
+          {config.language[lang].weekDay[i - 1]}
         </div>
       );
     } else if (id === "dayNum") {

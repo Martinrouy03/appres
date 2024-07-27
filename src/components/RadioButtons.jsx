@@ -6,12 +6,17 @@ import FormControl from "@mui/material/FormControl";
 // import config from "../app/configuration.json";
 import { useSelector, shallowEqual } from "react-redux";
 
-export default function RadioButtons({ regimes, regimeId, setRegimeId }) {
+export default function RadioButtons({ regimeId, setRegimeId, lang }) {
   const config = useSelector(
     (state) => state.configurationReducer.configuration,
     shallowEqual
   );
-  const regimeColors = config.regimeColors;
+  const regimeConfig = config.regimeColors;
+  const regimeTexts = config.language[lang].regimes;
+  const regimeSelector = useSelector(
+    (state) => state.regimesReducer.regimes,
+    shallowEqual
+  );
   return (
     <FormControl>
       <RadioGroup
@@ -22,9 +27,12 @@ export default function RadioButtons({ regimes, regimeId, setRegimeId }) {
           setRegimeId(event.target.value);
         }}
       >
-        {regimes.map((regime, index) => {
-          const color = regimeColors.filter(
+        {regimeSelector.map((regime, index) => {
+          const regColor = regimeConfig.filter(
             (regimeColor) => regimeColor.code === regime.code
+          );
+          const regTxt = regimeTexts.filter(
+            (regtxt) => regtxt.code === regime.code
           );
 
           return (
@@ -36,14 +44,15 @@ export default function RadioButtons({ regimes, regimeId, setRegimeId }) {
                   sx={{
                     color: "grey.400", // default color
                     "&.Mui-checked": {
-                      color: color[0].color,
+                      color: regColor[0].color,
                     },
                   }}
                 />
               }
-              label={regime.label}
+              // label={regime.label}
+              label={regTxt[0].label}
               style={{
-                color: color[0].color,
+                color: regColor[0].color,
                 height: "25px",
               }}
             />
