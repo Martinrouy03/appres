@@ -1,5 +1,4 @@
 import { useState } from "react";
-import moment from "moment";
 // Icons
 import { library } from "@fortawesome/fontawesome-svg-core";
 import {
@@ -80,6 +79,7 @@ function App() {
   const year = date.getFullYear();
   const mm = date.getMonth();
   const monthDay = date.getDate();
+  const hh = date.getHours();
   const init_week = Math.ceil(monthDay / 7);
 
   // State instantiations:
@@ -110,6 +110,7 @@ function App() {
     (state) => state.configurationReducer.configuration,
     shallowEqual
   );
+  const deadline = config.deadline;
   const order = useSelector((state) => state.orderReducer.order, shallowEqual);
   const places = useSelector(
     (state) => state.placesReducer.places,
@@ -170,7 +171,16 @@ function App() {
     let postEndDate = computeDateShift(mm, month, year, shift + 7);
     postEndDate.setHours(0, 0, 0, 0);
     if ((mm === month && week === init_week) || week === 1) {
-      startDate.setDate(startDate.getDate() + 7 - lengthMax);
+      if (
+        day < 7 &&
+        ((id === 1 && hh > deadline.breakfast) ||
+          (id === 2 && hh > deadline.lunch) ||
+          (id === 3 && hh > deadline.dinner))
+      ) {
+        startDate.setDate(startDate.getDate() + 7 - lengthMax + 1);
+      } else {
+        startDate.setDate(startDate.getDate() + 7 - lengthMax);
+      }
     }
     if (week === maxWeeks) {
       endDate.setDate(endDate.getDate() - 7 + lengthMax);
@@ -799,21 +809,27 @@ function App() {
                                 }}
                               />
                             ) : (
-                              <div id="chevron">
-                                <FontAwesomeIcon
-                                  icon="fa-solid fa-chevron-left"
-                                  id="quickSelect"
-                                  onClick={() => {
-                                    handleWeekButtons(
-                                      id,
-                                      month,
-                                      week,
-                                      place,
-                                      0
-                                    );
-                                  }}
-                                />
-                              </div>
+                              !(
+                                month === mm &&
+                                week === init_week &&
+                                day === 7
+                              ) && (
+                                <div id="chevron">
+                                  <FontAwesomeIcon
+                                    icon="fa-solid fa-chevron-left"
+                                    id="quickSelect"
+                                    onClick={() => {
+                                      handleWeekButtons(
+                                        id,
+                                        month,
+                                        week,
+                                        place,
+                                        0
+                                      );
+                                    }}
+                                  />
+                                </div>
+                              )
                             )}
                           </div>
                         );

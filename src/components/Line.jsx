@@ -305,12 +305,20 @@ const Line = ({
         <div
           key={i}
           style={{
-            color: enableDay(shift, shiftMin, shiftMax, id, hh, config.deadline)
+            color: enableDay(
+              shift,
+              shiftMin,
+              shiftMax,
+              month,
+              mm,
+              id,
+              hh,
+              config.deadline
+            )
               ? "black"
               : "lightgrey",
           }}
         >
-          {/* {convertDay(i)} */}
           {config.language[lang].weekDay[i - 1]}
         </div>
       );
@@ -322,7 +330,16 @@ const Line = ({
           className="num"
           key={i}
           style={{
-            color: enableDay(shift, shiftMin, shiftMax, id, hh, config.deadline)
+            color: enableDay(
+              shift,
+              shiftMin,
+              shiftMax,
+              month,
+              mm,
+              id,
+              hh,
+              config.deadline
+            )
               ? "black"
               : "lightgrey",
           }}
@@ -352,7 +369,16 @@ const Line = ({
         `m${id}_M${month}_w${week}_d${i}_p${place.rowid}`
       );
       if (
-        enableDay(shift, shiftMin, shiftMax, id, hh, config.deadline) &&
+        enableDay(
+          shift,
+          shiftMin,
+          shiftMax,
+          month,
+          mm,
+          id,
+          hh,
+          config.deadline
+        ) &&
         !disabledMeal
       ) {
         line.push(

@@ -188,9 +188,17 @@ export const getMealPrice = (code) => {
       return 0;
   }
 };
-export const enableDay = (shift, shiftMin, shiftMax, id, hh, deadline) => {
-  console.log(deadline);
-  if (shift === 0) {
+export const enableDay = (
+  shift,
+  shiftMin,
+  shiftMax,
+  month,
+  mm,
+  id,
+  hh,
+  deadline
+) => {
+  if (month === mm && shift === 0) {
     if (id === 1) {
       return hh < deadline.breakfast;
     } else if (id === 2) {
