@@ -7,9 +7,6 @@ import {
   orderBreakLine,
 } from "../services/services/OrderActions";
 import {
-  getMealCode,
-  getMealLabel,
-  getMealPrice,
   computeShift,
   computeDateShift,
   convertToUnix,
@@ -65,9 +62,12 @@ const Line = ({
     }
     let selectedLines = [];
     let count = 0;
+    let mealObj = config.meal.filter((meal) => meal.code === id);
+    const mealLabel = mealObj[0].label;
+    const mealCode = mealObj[0].code;
+    const mealPrice = mealObj[0].price;
     selectedLines = order.lines.filter(
-      (line) =>
-        getMealCode(line.libelle) === id || getMealCode(line.label) === id
+      (line) => line.libelle === mealLabel || line.label === mealLabel
     );
 
     // ----- Mise à jour des lignes de commande ----- //
@@ -257,9 +257,9 @@ const Line = ({
               options_lin_datefin: convertToUnix(selectedDate),
             },
             fk_product: String(id + 1),
-            label: getMealLabel(id),
+            label: mealCode,
             qty: "1",
-            subprice: getMealPrice(id),
+            subprice: mealPrice,
             remise_percent: 0,
           },
           token

@@ -57,137 +57,6 @@ export function computeDateShift(mm, month, year, shift) {
   }
   return dateShift;
 }
-// export function convertMonth(mm) {
-//   let month = "";
-//   switch (mm) {
-//     case 0:
-//       month = "Janvier";
-//       break;
-//     case 1:
-//       month = "Février";
-//       break;
-//     case 2:
-//       month = "Mars";
-//       break;
-//     case 3:
-//       month = "Avril";
-//       break;
-//     case 4:
-//       month = "Mai";
-//       break;
-//     case 5:
-//       month = "Juin";
-//       break;
-//     case 6:
-//       month = "Juillet";
-//       break;
-//     case 7:
-//       month = "Août";
-//       break;
-//     case 8:
-//       month = "Septembre";
-//       break;
-//     case 9:
-//       month = "Octobre";
-//       break;
-//     case 10:
-//       month = "Novembre";
-//       break;
-//     case 11:
-//       month = "Décembre";
-//       break;
-//     default:
-//       month = mm;
-//   }
-//   return month;
-// }
-// export function convertDay(d) {
-//   let weekday = "";
-//   switch (d) {
-//     case 1:
-//       weekday = "Lundi";
-//       break;
-//     case 2:
-//       weekday = "Mardi";
-//       break;
-//     case 3:
-//       weekday = "Mercredi";
-//       break;
-//     case 4:
-//       weekday = "Jeudi";
-//       break;
-//     case 5:
-//       weekday = "Vendredi";
-//       break;
-//     case 6:
-//       weekday = "Samedi";
-//       break;
-//     case 7:
-//       weekday = "Dimanche";
-//       break;
-//     default:
-//       weekday = "??";
-//   }
-//   return weekday;
-// }
-export const getMealCode = (label) => {
-  switch (label) {
-    case "Petit-déjeuner":
-      return 1;
-    case "Déjeuner":
-      return 2;
-    case "Dîner":
-      return 3;
-    default:
-      return 0;
-  }
-};
-export const getRegimeCode = (boolean) => {
-  switch (boolean) {
-    case false:
-      return "4";
-    case true:
-      return "2";
-    default:
-      return "0";
-  }
-};
-export const getMealLabel = (code) => {
-  switch (code) {
-    case 1:
-      return "Petit-déjeuner";
-    case 2:
-      return "Déjeuner";
-    case 3:
-      return "Dîner";
-    default:
-      return 0;
-  }
-};
-export const getPlaceLabel = (code) => {
-  switch (code) {
-    case 1:
-      return "Le Bost";
-    case 2:
-      return "Laussedat";
-    case 3:
-      return "Ermitage";
-    default:
-      return 0;
-  }
-};
-export const getMealPrice = (code) => {
-  switch (code) {
-    case 1:
-      return "2";
-    case 2:
-      return "3.5";
-    case 3:
-      return "3";
-    default:
-      return 0;
-  }
-};
 export const enableDay = (
   shift,
   shiftMin,
@@ -258,13 +127,13 @@ export const computeMaxWeeks = (year, month, previousMonth) => {
   return maxWeeks;
 };
 export const convertLinesToArray = (orderLines, codeRepas) => {
-  // const codeRepas = config.codeRepas;
   let week = 1;
   const date = new Date(); // date du jour
   const mm = date.getMonth(); // Mois actuel
   const meals = [];
   const disabledMeals = [];
   const places = store.getState().placesReducer.places;
+  const config = store.getState().configurationReducer.configuration;
   let placeids = [];
   places && places.map((place) => placeids.push(place.rowid));
   orderLines.map((line) => {
@@ -285,7 +154,13 @@ export const convertLinesToArray = (orderLines, codeRepas) => {
       );
 
       const total = (dateFin - dateDebut) / (24 * 3600 * 1000) + 1; // nb de jours dans la commande
-      let mealCode = getMealCode(line.libelle) || getMealCode(line.label);
+
+      // let mealCode = getMealCode(line.libelle) || getMealCode(line.label);
+      let mealCode = config.meal.filter(
+        (meal) => meal.label === line.libelle || meal.label === line.label
+      );
+
+      mealCode = mealCode[0].code;
 
       for (let i = 0; i < total; i++) {
         const atomicDate = new Date(

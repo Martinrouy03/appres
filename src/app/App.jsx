@@ -9,14 +9,12 @@ import {
 import { faCircleXmark } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  getMealCode,
   getMealLabel,
   getMealPrice,
   convertToUnix,
   computeShift,
   computeMaxWeeks,
   computeLengthMax,
-  convertMonth,
   filterMeals,
   convertLinesToArray,
   computeDateShift,
@@ -160,7 +158,10 @@ function App() {
       week,
       init_week
     );
-
+    let mealObj = config.meal.filter((meal) => meal.code === id);
+    const mealLabel = mealObj[0].label;
+    const mealCode = mealObj[0].code;
+    const mealPrice = mealObj[0].price;
     // Determine startDate and endDate:
     let anteStartDate = computeDateShift(mm, month, year, shift - 1);
     anteStartDate.setHours(0, 0, 0, 0);
@@ -188,9 +189,10 @@ function App() {
 
     // Identify orderlines already existing within the selected week and id
     let selectedLines = [];
+
     selectedLines = order.lines.filter(
       (line) =>
-        (getMealCode(line.libelle) === id || getMealCode(line.label) === id) &&
+        (line.libelle === mealLabel || line.label === mealLabel) &&
         line.array_options.options_lin_datedebut >= convertToUnix(startDate) &&
         line.array_options.options_lin_datefin <= convertToUnix(endDate)
     );
@@ -199,8 +201,7 @@ function App() {
     let anteLine = [];
     anteLine = order.lines.filter(
       (line) =>
-        (getMealCode(line.libelle) === id || getMealCode(line.label) === id) &&
-        // line.array_options.options_lin_room === regimeId &&
+        (line.libelle === mealLabel || line.label === mealLabel) &&
         line.array_options.options_lin_datedebut <=
           convertToUnix(anteStartDate) &&
         line.array_options.options_lin_datefin >=
@@ -213,8 +214,8 @@ function App() {
     let postLine = [];
     postLine = order.lines.filter(
       (line) =>
-        (getMealCode(line.libelle) === id || getMealCode(line.label) === id) &&
-        // line.array_options.options_lin_room === regimeId &&
+        // (getMealCode(line.libelle) === id || getMealCode(line.label) === id) &&
+        (line.libelle === mealLabel || line.label === mealLabel) &&
         line.array_options.options_lin_datedebut >= convertToUnix(startDate) &&
         line.array_options.options_lin_datedebut <=
           convertToUnix(postEndDate) &&
@@ -225,7 +226,7 @@ function App() {
     let bridgeLine = [];
     bridgeLine = order.lines.filter(
       (line) =>
-        (getMealCode(line.libelle) === id || getMealCode(line.label) === id) &&
+        (line.libelle === mealLabel || line.label === mealLabel) &&
         line.array_options.options_lin_datedebut < convertToUnix(startDate) &&
         line.array_options.options_lin_datefin > convertToUnix(endDate)
     );
@@ -485,9 +486,9 @@ function App() {
               options_lin_datefin: convertToUnix(endDate),
             },
             fk_product: String(id + 1),
-            label: getMealLabel(id),
+            label: mealCode,
             qty: lengthMax,
-            subprice: getMealPrice(id),
+            subprice: mealPrice,
             remise_percent: 0,
           };
           dispatch(
@@ -543,9 +544,9 @@ function App() {
               options_lin_datefin: convertToUnix(endDate),
             },
             fk_product: String(id + 1),
-            label: getMealLabel(id),
+            label: mealCode,
             qty: lengthMax,
-            subprice: getMealPrice(id),
+            subprice: mealPrice,
             remise_percent: 0,
           };
           dispatch(
@@ -601,9 +602,9 @@ function App() {
               options_lin_datefin: convertToUnix(endDate),
             },
             fk_product: String(id + 1),
-            label: getMealLabel(id),
+            label: mealCode,
             qty: lengthMax,
-            subprice: getMealPrice(id),
+            subprice: mealPrice,
             remise_percent: 0,
           };
           dispatch(
@@ -632,9 +633,9 @@ function App() {
                 options_lin_datefin: convertToUnix(endDate),
               },
               fk_product: String(id + 1),
-              label: getMealLabel(id),
+              label: mealCode,
               qty: lengthMax,
-              subprice: getMealPrice(id),
+              subprice: mealPrice,
               remise_percent: 0,
             },
             token

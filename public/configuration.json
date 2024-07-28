@@ -1,4 +1,10 @@
 {
+  "meal": [
+    { "code": 0, "label": "Repas résident", "price": 0 },
+    { "code": 1, "label": "Petit-déjeuner", "price": 2 },
+    { "code": 2, "label": "Déjeuner", "price": 3.5 },
+    { "code": 3, "label": "Dîner", "price": 3 }
+  ],
   "regimeColors": [
     { "code": "MPT_VEGE", "color": "lightgreen" },
     { "code": "MPT_WG-WM", "color": "orange" },
