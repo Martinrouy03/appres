@@ -19,10 +19,16 @@
   },
   "language": {
     "FR": {
+      "identify": "Identifiez-vous",
+      "username": "Nom d'utilisateur",
+      "password": "Mot de passe",
+      "loginButton": "Connexion",
+      "loginError": "Identifiants incorrects",
       "title": "Réservation Repas",
       "signin": "Se connecter",
       "signout": "Se déconnecter",
       "signinMessage": "Veuillez vous connecter",
+      "loading": "En chargement ...",
       "notAvailable": "Réservation indisponible",
       "month": [
         "Janvier",
@@ -62,10 +68,16 @@
       }
     },
     "EN": {
+      "identify": "Enter your logins",
+      "username": "Username",
+      "password": "Password",
+      "loginButton": "Login",
+      "loginError": "Incorrect Login Details",
       "title": "Meal Reservation",
       "signin": "Sign In",
       "signout": "Sign Out",
       "signinMessage": "Please Sign In",
+      "loading": "Loading ...",
       "notAvailable": "Not Available",
       "month": [
         "January",

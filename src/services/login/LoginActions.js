@@ -37,7 +37,6 @@ export function loguser(username, password) {
           )
           .then((json) => {
             console.log("fetchEmailSuccess : ");
-            // console.log(json.data);
             const email = json.data[0].email;
             localStorage.setItem("userEmail", email);
             axios

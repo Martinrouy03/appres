@@ -1,4 +1,5 @@
 import { useSelector, shallowEqual, useDispatch } from "react-redux";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import moment from "moment";
 import {
   updateOrderLine,
@@ -6,6 +7,7 @@ import {
   removeOrderLine,
   orderBreakLine,
 } from "../services/services/OrderActions";
+import { updateIsUnFolded } from "../services/services/PlacesActions";
 import {
   computeShift,
   computeDateShift,
@@ -23,9 +25,14 @@ const Line = ({
   disabledMeals,
   regimeId,
   lang,
+  indexPlace,
 }) => {
   const dispatch = useDispatch();
   const order = useSelector((state) => state.orderReducer.order, shallowEqual);
+  const isUnFolded = useSelector(
+    (state) => state.placesReducer.isUnFolded,
+    shallowEqual
+  );
   const config = useSelector(
     (state) => state.configurationReducer.configuration,
     shallowEqual
@@ -267,13 +274,23 @@ const Line = ({
       );
     }
   };
-
+  const handleFolding = (indexPlace, isUnFolded) => {
+    dispatch(updateIsUnFolded(isUnFolded, indexPlace));
+  };
   let line = [];
   switch (id) {
     case "dayNum":
       line.push(
-        <div>
+        <div id="placeLabel">
           <h2>{place.label}</h2>
+          <FontAwesomeIcon
+            id="chevron"
+            onClick={() => {
+              handleFolding(indexPlace, isUnFolded);
+            }}
+            icon="fa-solid fa-chevron-down"
+            size="xl"
+          />
         </div>
       );
       break;

@@ -27,7 +27,6 @@ export function getOrder(customerID, month, setCommandNb, token) {
             // Number(order.statut) > 0 &&
             order.lines.length > 0 //&&
         );
-        console.log("codeRepas: ", codeRepas);
         orders = orders.filter((order) =>
           order.lines.some(
             (line) =>

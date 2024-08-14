@@ -3,10 +3,13 @@ import { useState } from "react";
 import { loguser, modalOut } from "../services/login/LoginActions";
 import { useDispatch, useSelector, shallowEqual } from "react-redux";
 
-const LoginModal = () => {
+const LoginModal = ({ lang }) => {
   const dispatch = useDispatch();
   const [username, setUsername] = useState("");
   const [pwd, setPwd] = useState("");
+  const language = useSelector(
+    (state) => state.configurationReducer.configuration.language
+  );
   const error = useSelector((state) => state.loginReducer.error, shallowEqual);
 
   const handleSubmit = async (username, password) => {
@@ -34,12 +37,13 @@ const LoginModal = () => {
       >
         <form>
           <br />
-          <h1>Identifiez-vous</h1>
+
+          <h1>{language[lang].identify}</h1>
           <div className="input-container">
             <input
               type="text"
               value={username}
-              placeholder="Username:"
+              placeholder={language[lang].username}
               onChange={(event) => {
                 setUsername(event.target.value);
               }}
@@ -48,17 +52,21 @@ const LoginModal = () => {
           <input
             type="password"
             value={pwd}
-            placeholder="Password:"
+            placeholder={language[lang].password}
             onChange={(event) => {
               setPwd(event.target.value);
             }}
           />
           {error && error.response.status === 403 && (
             <h3 style={{ color: "red", display: "center" }}>
-              Identifiants incorrects
+              {language[lang].loginError}
             </h3>
           )}
-          <input type="submit" value="Login" />
+          <input
+            type="submit"
+            value={language[lang].loginButton}
+            disabled={!(username && pwd)}
+          />
         </form>
       </div>
     </div>

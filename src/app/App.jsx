@@ -2,6 +2,7 @@ import { useState } from "react";
 // Icons
 import { library } from "@fortawesome/fontawesome-svg-core";
 import {
+  faChevronDown,
   faChevronRight,
   faChevronLeft,
   faChevronUp,
@@ -9,12 +10,11 @@ import {
 import { faCircleXmark } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  getMealLabel,
-  getMealPrice,
   convertToUnix,
   computeShift,
   computeMaxWeeks,
   computeLengthMax,
+  adujstLengthMax,
   filterMeals,
   convertLinesToArray,
   computeDateShift,
@@ -35,6 +35,8 @@ import {
   orderBreakLine,
   updateOrderLineandAddOrderline,
 } from "../services/services/OrderActions";
+import { updateIsUnFolded } from "../services/services/PlacesActions";
+
 import { getPlaces } from "../services/services/PlacesActions";
 import { getRegimes } from "../services/services/RegimesActions";
 import { getConfiguration } from "../services/services/ConfigurationActions";
@@ -53,7 +55,13 @@ import PlacesReducer from "../services/services/PlacesReducer";
 import RegimesReducer from "../services/services/RegimesReducer";
 import LoginReducer from "../services/login/LoginReducer";
 
-library.add(faChevronRight, faChevronLeft, faChevronUp, faCircleXmark);
+library.add(
+  faChevronRight,
+  faChevronLeft,
+  faChevronUp,
+  faChevronDown,
+  faCircleXmark
+);
 
 export const store = configureStore({
   reducer: {
@@ -78,30 +86,29 @@ function App() {
   const mm = date.getMonth();
   const monthDay = date.getDate();
   const hh = date.getHours();
-  const init_week = Math.ceil(monthDay / 7);
 
   // State instantiations:
   // const [configLoaded, setConfigLoaded] = useState(false);
   const [regimeId, setRegimeId] = useState("4");
   const [commandNb, setCommandNb] = useState(0);
-  const [week, setWeek] = useState(init_week);
   const [month, setMonth] = useState(mm);
-  const [lang, setLang] = useState("FR");
+  const navLanguage = navigator.language || navigator.userLanguage;
+  let initLang = "";
+  if (navLanguage.includes("fr")) {
+    initLang = "FR";
+  } else {
+    initLang = "EN";
+  }
+  const [lang, setLang] = useState(initLang);
 
   // More date variables
   const newDate = new Date(year, month, 1);
   const firstWeekDay = mm === month ? day : newDate.getDay() || 7; // Jour de la semaine du premier jour du mois
+  // const firstWeekDay = newDate.getDay() || 7; // Jour de la semaine du premier jour du mois
   const lastWeekDay = new Date(year, month + 1, 0).getDay(); // Jour de la semaine du dernier jour du mois
   const maxWeeks = computeMaxWeeks(year, month, 0);
-  const lengthMax = computeLengthMax(
-    mm,
-    month,
-    week,
-    init_week,
-    maxWeeks,
-    firstWeekDay,
-    lastWeekDay
-  );
+  const init_week = Math.ceil(monthDay / 7);
+  const [week, setWeek] = useState(init_week);
 
   // Selector instantiations:
   const config = useSelector(
@@ -112,6 +119,11 @@ function App() {
   const order = useSelector((state) => state.orderReducer.order, shallowEqual);
   const places = useSelector(
     (state) => state.placesReducer.places,
+    shallowEqual
+  );
+
+  const isUnFolded = useSelector(
+    (state) => state.placesReducer.isUnFolded,
     shallowEqual
   );
   const loading = useSelector(
@@ -126,7 +138,18 @@ function App() {
     (state) => state.loginReducer.modalClose,
     shallowEqual
   );
-
+  // console.log(firstWeekDay);
+  let lengthMax =
+    config.deadline &&
+    computeLengthMax(
+      mm,
+      month,
+      week,
+      init_week,
+      maxWeeks,
+      firstWeekDay,
+      lastWeekDay
+    );
   // fetch meals and disabledMeals arrays, used to display the checkboxs
   let result = {
     meals: [],
@@ -139,7 +162,6 @@ function App() {
   // Identifying the type of meals: 1 = Breakfast; 2 = Lunch; 3 = Dinner:
   const ids = [1, 2, 3];
   const maxid = ids[ids.length - 1]; // maxid is used to identify the last Line component of each Place table, in order to apply specific css (border-radius)
-
   useEffect(() => {
     dispatch(getConfiguration());
     token && dispatch(getPlaces(token));
@@ -148,6 +170,7 @@ function App() {
       config.codeRepas &&
       dispatch(getOrder(userId, month, setCommandNb, token));
   }, [month, user, modalClose, config]);
+  // console.log("meals: ", meals);
   const handleWeekButtons = (id, month, week, place, suppress) => {
     const shift = computeShift(
       mm,
@@ -162,6 +185,24 @@ function App() {
     const mealLabel = mealObj[0].label;
     const mealCode = mealObj[0].code;
     const mealPrice = mealObj[0].price;
+    // console.log("lengthMax: ", lengthMax);
+    const adjust = adujstLengthMax(
+      mm,
+      month,
+      week,
+      init_week,
+      lengthMax,
+      id,
+      hh,
+      config.deadline
+    );
+    const lengthMaxId = adjust.length;
+    // console.log("lengthMaxId: ", lengthMaxId);
+    let quantity = lengthMaxId;
+    if (mm === month && week === maxWeeks) {
+      quantity = quantity - day;
+    }
+    const endDateCompensation = adjust.endDate;
     // Determine startDate and endDate:
     let anteStartDate = computeDateShift(mm, month, year, shift - 1);
     anteStartDate.setHours(0, 0, 0, 0);
@@ -171,22 +212,50 @@ function App() {
     endDate.setHours(0, 0, 0, 0);
     let postEndDate = computeDateShift(mm, month, year, shift + 7);
     postEndDate.setHours(0, 0, 0, 0);
-    if ((mm === month && week === init_week) || week === 1) {
-      if (
-        day < 7 &&
-        ((id === 1 && hh > deadline.breakfast) ||
-          (id === 2 && hh > deadline.lunch) ||
-          (id === 3 && hh > deadline.dinner))
-      ) {
-        startDate.setDate(startDate.getDate() + 7 - lengthMax + 1);
+    // console.log("week: ", week, "init_week: ", init_week);
+    if (mm === month && week === init_week) {
+      if (week !== maxWeeks) {
+        if (
+          day < 7 &&
+          ((id === 1 && hh > deadline.breakfast) ||
+            (id === 2 && hh > deadline.lunch) ||
+            (id === 3 && hh > deadline.dinner))
+        ) {
+          startDate.setDate(startDate.getDate() + 7 - lengthMaxId);
+          quantity = lengthMaxId;
+          // console.log("allo1: ", lengthMaxId, "quantity: ", quantity);
+        } else {
+          // startDate.setDate(startDate.getDate() + 7 - lengthMaxId);
+          startDate.setDate(startDate.getDate() + 7 - lengthMax);
+          quantity = lengthMax;
+          // console.log("allo2: ", lengthMax);
+        }
       } else {
-        startDate.setDate(startDate.getDate() + 7 - lengthMax);
+        if (
+          day < 7 &&
+          ((id === 1 && hh > deadline.breakfast) ||
+            (id === 2 && hh > deadline.lunch) ||
+            (id === 3 && hh > deadline.dinner))
+        ) {
+          // console.log("allo3");
+          startDate.setDate(startDate.getDate() + lengthMaxId);
+          quantity = lengthMaxId;
+        } else {
+          // console.log("allo4");
+          startDate.setDate(startDate.getDate() + lengthMaxId - 1);
+        }
       }
+    } else if (week === 1) {
+      startDate.setDate(startDate.getDate() + 7 - lengthMax);
+    } else {
+      quantity = lengthMax;
     }
     if (week === maxWeeks) {
-      endDate.setDate(endDate.getDate() - 7 + lengthMax);
+      endDate.setDate(
+        endDate.getDate() - 7 + lengthMaxId + endDateCompensation
+      );
     }
-
+    // console.log(week, maxWeeks);
     // Identify orderlines already existing within the selected week and id
     let selectedLines = [];
 
@@ -260,7 +329,7 @@ function App() {
         };
         postLine.array_options.options_lin_datedebut =
           convertToUnix(postEndDate);
-        postLine.qty = Number(postLine.qty) - lengthMax;
+        postLine.qty = Number(postLine.qty) - quantity;
         dispatch(
           updateOrderLine(
             postLine.commande_id,
@@ -283,7 +352,7 @@ function App() {
           console.log("SHORTEN ANTELINE");
           anteLine.array_options.options_lin_datefin =
             convertToUnix(anteStartDate);
-          anteLine.qty = Number(anteLine.qty) - lengthMax;
+          anteLine.qty = Number(anteLine.qty) - lengthMaxId;
           dispatch(
             updateOrderLine(
               anteLine.commande_id,
@@ -319,7 +388,7 @@ function App() {
           console.log("SHORTEN POSTLINE");
           postLine.array_options.options_lin_datedebut =
             convertToUnix(postEndDate);
-          postLine.qty = Number(postLine.qty) - lengthMax;
+          postLine.qty = Number(postLine.qty) - lengthMaxId;
           dispatch(
             updateOrderLine(
               postLine.commande_id,
@@ -404,7 +473,8 @@ function App() {
           postLine.array_options.options_lin_room !== regimeId
         ) {
           anteLine.array_options.options_lin_datefin = convertToUnix(endDate);
-          anteLine.qty = Number(anteLine.qty) + lengthMax - overflowingAnteDays;
+          anteLine.qty =
+            Number(anteLine.qty) + lengthMaxId - overflowingAnteDays;
 
           dispatch(
             updateOrderLine(
@@ -449,7 +519,8 @@ function App() {
           );
           postLine.array_options.options_lin_datedebut =
             convertToUnix(startDate);
-          postLine.qty = Number(postLine.qty) + lengthMax - overflowingPostDays;
+          postLine.qty =
+            Number(postLine.qty) + lengthMaxId - overflowingPostDays;
           dispatch(
             updateOrderLine(
               postLine.commande_id,
@@ -487,7 +558,7 @@ function App() {
             },
             fk_product: String(id + 1),
             label: mealCode,
-            qty: lengthMax,
+            qty: quantity,
             subprice: mealPrice,
             remise_percent: 0,
           };
@@ -516,7 +587,7 @@ function App() {
               convertToUnix(anteStartDate)) /
             (24 * 3600);
           anteLine.array_options.options_lin_datefin = convertToUnix(endDate);
-          anteLine.qty = Number(anteLine.qty) + lengthMax - overflowingDays;
+          anteLine.qty = Number(anteLine.qty) + lengthMaxId - overflowingDays;
           dispatch(
             updateOrderLine(
               anteLine.commande_id,
@@ -545,7 +616,7 @@ function App() {
             },
             fk_product: String(id + 1),
             label: mealCode,
-            qty: lengthMax,
+            qty: lengthMaxId,
             subprice: mealPrice,
             remise_percent: 0,
           };
@@ -575,7 +646,7 @@ function App() {
             (24 * 3600);
           postLine.array_options.options_lin_datedebut =
             convertToUnix(startDate);
-          postLine.qty = Number(postLine.qty) + lengthMax - overflowingDays;
+          postLine.qty = Number(postLine.qty) + lengthMaxId - overflowingDays;
           dispatch(
             updateOrderLine(
               postLine.commande_id,
@@ -603,7 +674,7 @@ function App() {
             },
             fk_product: String(id + 1),
             label: mealCode,
-            qty: lengthMax,
+            qty: lengthMaxId,
             subprice: mealPrice,
             remise_percent: 0,
           };
@@ -634,7 +705,7 @@ function App() {
               },
               fk_product: String(id + 1),
               label: mealCode,
-              qty: lengthMax,
+              qty: quantity,
               subprice: mealPrice,
               remise_percent: 0,
             },
@@ -654,7 +725,7 @@ function App() {
   return (
     <>
       <Header token={token} lang={lang} setLang={setLang} />
-      {!modalClose && !token && <LoginModal />}
+      {!modalClose && config.language && !token && <LoginModal lang={lang} />}
       {!token ? (
         <div className="center">
           {config.language && config.language[lang].signinMessage}
@@ -743,9 +814,10 @@ function App() {
             )}
           </div>
           <div className="tables">
-            {places && order.lines ? (
+            {!loading ? (
               places.map((place, index) => {
-                return (
+                // console.log("lengthMaxPlaces: ", lengthMax);
+                return isUnFolded[index] ? (
                   <div index={index} className="table">
                     <div className="table">
                       <div className="line">
@@ -767,10 +839,29 @@ function App() {
                             week={week}
                             month={month}
                             place={place}
+                            indexPlace={index}
                           ></Line>
                         </div>
                       </div>
                       {ids.map((id) => {
+                        const adjust = adujstLengthMax(
+                          mm,
+                          month,
+                          week,
+                          init_week,
+                          lengthMax,
+                          id,
+                          hh,
+                          config.deadline
+                        );
+                        const lengthMaxId = adjust.length;
+                        const endDateCompensation = adjust.endDate;
+                        // console.log(
+                        //   "lengthMaxId: ",
+                        //   lengthMaxId,
+                        //   endDateCompensation
+                        // );
+                        // console.log("day: ", day, "lastWeekDay: ", lastWeekDay);
                         return (
                           <div key={id} className="line">
                             <div
@@ -800,7 +891,7 @@ function App() {
                               place.rowid,
                               mm,
                               month
-                            ).length === lengthMax ? (
+                            ).length === lengthMaxId ? (
                               <FontAwesomeIcon
                                 icon="fa-regular fa-circle-xmark"
                                 size="2xl"
@@ -813,7 +904,12 @@ function App() {
                               !(
                                 month === mm &&
                                 week === init_week &&
-                                day === 7
+                                (day === 7 ||
+                                  day === lastWeekDay ||
+                                  (day === 6 &&
+                                    ((id === 1 && hh > deadline.breakfast) ||
+                                      (id === 2 && hh > deadline.lunch) ||
+                                      (id === 3 && hh > deadline.dinner))))
                               ) && (
                                 <div id="chevron">
                                   <FontAwesomeIcon
@@ -837,11 +933,23 @@ function App() {
                       })}
                     </div>
                   </div>
+                ) : (
+                  <div id="folded">
+                    <h2>{place.label}</h2>
+                    <FontAwesomeIcon
+                      id="chevron"
+                      onClick={() => {
+                        dispatch(updateIsUnFolded(isUnFolded, index));
+                      }}
+                      icon="fa-solid fa-chevron-right"
+                      size="xl"
+                    />
+                  </div>
                 );
               })
             ) : (
               <div className="center">
-                {config.language && config.language[lang].notAvailable}
+                {config.language && config.language[lang].loading}
               </div>
             )}
           </div>
