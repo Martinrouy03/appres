@@ -103,11 +103,13 @@ function App() {
 
   // More date variables
   const newDate = new Date(year, month, 1);
+  const offset = newDate.getDay() || 7;
   const firstWeekDay = mm === month ? day : newDate.getDay() || 7; // Jour de la semaine du premier jour du mois
   // const firstWeekDay = newDate.getDay() || 7; // Jour de la semaine du premier jour du mois
   const lastWeekDay = new Date(year, month + 1, 0).getDay(); // Jour de la semaine du dernier jour du mois
   const maxWeeks = computeMaxWeeks(year, month, 0);
-  const init_week = Math.ceil(monthDay / 7);
+  const init_week = Math.ceil((monthDay + offset) / 7);
+  console.log("test: ", newDate.toDateString(), offset, monthDay, init_week);
   const [week, setWeek] = useState(init_week);
 
   // Selector instantiations:
@@ -158,6 +160,7 @@ function App() {
   result = order.lines ? convertLinesToArray(order.lines) : result;
   const meals = result.meals;
   const disabledMeals = result.disabledMeals;
+  console.log("App: week: ", week);
 
   // Identifying the type of meals: 1 = Breakfast; 2 = Lunch; 3 = Dinner:
   const ids = [1, 2, 3];
@@ -223,12 +226,9 @@ function App() {
         ) {
           startDate.setDate(startDate.getDate() + 7 - lengthMaxId);
           quantity = lengthMaxId;
-          // console.log("allo1: ", lengthMaxId, "quantity: ", quantity);
         } else {
-          // startDate.setDate(startDate.getDate() + 7 - lengthMaxId);
           startDate.setDate(startDate.getDate() + 7 - lengthMax);
           quantity = lengthMax;
-          // console.log("allo2: ", lengthMax);
         }
       } else {
         if (
@@ -237,11 +237,9 @@ function App() {
             (id === 2 && hh > deadline.lunch) ||
             (id === 3 && hh > deadline.dinner))
         ) {
-          // console.log("allo3");
           startDate.setDate(startDate.getDate() + lengthMaxId);
           quantity = lengthMaxId;
         } else {
-          // console.log("allo4");
           startDate.setDate(startDate.getDate() + lengthMaxId - 1);
         }
       }
@@ -255,7 +253,6 @@ function App() {
         endDate.getDate() - 7 + lengthMaxId + endDateCompensation
       );
     }
-    // console.log(week, maxWeeks);
     // Identify orderlines already existing within the selected week and id
     let selectedLines = [];
 
@@ -855,13 +852,8 @@ function App() {
                           config.deadline
                         );
                         const lengthMaxId = adjust.length;
-                        const endDateCompensation = adjust.endDate;
-                        // console.log(
-                        //   "lengthMaxId: ",
-                        //   lengthMaxId,
-                        //   endDateCompensation
-                        // );
-                        // console.log("day: ", day, "lastWeekDay: ", lastWeekDay);
+                        // const endDateCompensation = adjust.endDate;
+
                         return (
                           <div key={id} className="line">
                             <div

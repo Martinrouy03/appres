@@ -47,9 +47,11 @@ const Line = ({
   const mm = date.getMonth();
   const hh = date.getHours();
   const year = mm < month ? date.getFullYear() : date.getFullYear() + 1;
+  const newDate = new Date(year, month, 1);
+  const offset = newDate.getDay() || 7;
   const firstDay = mm === month ? date : new Date(year, month, 1); // //Jour J du mois actuel, et premier jour du mois suivant
   const lastDay = new Date(year, month + 1, 0); // Dernier jour du mois
-  const init_week = Math.ceil(date.getDate() / 7);
+  const init_week = Math.ceil((date.getDate() + offset) / 7);
 
   // shiftMin et shiftMax sont les nombres min et max de jours
   // à partir de la date actuelle pour lesquelles la saisie est possible (non grisée)

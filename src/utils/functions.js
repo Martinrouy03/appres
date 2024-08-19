@@ -67,6 +67,7 @@ export function computeShift(mm, month, i, day, firstDay, week, init_week) {
   let shift = 0;
   if (mm === month) {
     shift = i - day + (week - init_week) * 7;
+    console.log(week, init_week, "shift: ", shift);
   } else {
     shift = i - (firstDay || 7) + 1 + (week - 1) * 7;
   }
@@ -176,8 +177,8 @@ export const convertLinesToArray = (orderLines, codeRepas) => {
       const year = dateDebut.getFullYear();
       const firstDay = new Date(year, month, 1); // jour de la semaine du premier jour du mois
       // console.log("firstDay: ", firstDay);
-      // const monthDay = mm === month ? date.getDate() : firstDay.getDay() || 7;
-      const monthDay = firstDay.getDay() || 7;
+      // const offset = mm === month ? date.getDate() : firstDay.getDay() || 7;
+      const offset = firstDay.getDay() || 7;
       const dateFin = new Date(
         moment.unix(line.array_options.options_lin_datefin)
       );
@@ -190,7 +191,7 @@ export const convertLinesToArray = (orderLines, codeRepas) => {
       );
 
       mealCode = mealCode[0].code;
-      // console.log("monthDay: ", monthDay);
+      // console.log("offset: ", offset);
       for (let i = 0; i < total; i++) {
         // boucle sur chaque jour de la commande
         const atomicDate = new Date(
@@ -207,9 +208,9 @@ export const convertLinesToArray = (orderLines, codeRepas) => {
         //     ? 1 + (atomicDate.getTime() - date.getTime()) / (24 * 3600 * 1000) // nombre de jours entre aujourd'hui et le jour en question
         //     : (atomicDate.getTime() - firstDay.getTime()) / (24 * 3600 * 1000); // Nombre de jours entre le premier jour du mois et le jour concerné
         if (mm === month) {
-          week = Math.ceil((monthDay - 1 + date.getDate() + shift) / 7); // check
+          week = Math.ceil((offset - 1 + date.getDate() + shift) / 7); // check
         } else {
-          week = Math.ceil((monthDay + shift) / 7);
+          week = Math.ceil((offset + shift) / 7);
         }
         // console.log("shift: ", shift, "week: ", week);
         const weekday_tmp = atomicDate.getDay() || 7;
@@ -225,6 +226,7 @@ export const convertLinesToArray = (orderLines, codeRepas) => {
       }
     }
   });
+  console.log("functions: week: ", week);
   return { meals: meals, disabledMeals: disabledMeals };
 };
 export const convertToUnix = (date) => {
