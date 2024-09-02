@@ -88,7 +88,6 @@ function App() {
   const hh = date.getHours();
 
   // State instantiations:
-  // const [configLoaded, setConfigLoaded] = useState(false);
   const [regimeId, setRegimeId] = useState("4");
   const [commandNb, setCommandNb] = useState(0);
   const [month, setMonth] = useState(mm);
@@ -109,7 +108,6 @@ function App() {
   const lastWeekDay = new Date(year, month + 1, 0).getDay(); // Jour de la semaine du dernier jour du mois
   const maxWeeks = computeMaxWeeks(year, month, 0);
   const init_week = Math.ceil((monthDay + offset) / 7);
-  console.log("test: ", newDate.toDateString(), offset, monthDay, init_week);
   const [week, setWeek] = useState(init_week);
 
   // Selector instantiations:
@@ -160,7 +158,7 @@ function App() {
   result = order.lines ? convertLinesToArray(order.lines) : result;
   const meals = result.meals;
   const disabledMeals = result.disabledMeals;
-  console.log("App: week: ", week);
+  // console.log("App: week: ", week);
 
   // Identifying the type of meals: 1 = Breakfast; 2 = Lunch; 3 = Dinner:
   const ids = [1, 2, 3];
@@ -218,14 +216,16 @@ function App() {
     // console.log("week: ", week, "init_week: ", init_week);
     if (mm === month && week === init_week) {
       if (week !== maxWeeks) {
+        // console.log(id, hh, deadline.dinner);
         if (
           day < 7 &&
-          ((id === 1 && hh > deadline.breakfast) ||
-            (id === 2 && hh > deadline.lunch) ||
-            (id === 3 && hh > deadline.dinner))
+          ((id === 1 && hh >= deadline.breakfast) ||
+            (id === 2 && hh >= deadline.lunch) ||
+            (id === 3 && hh >= deadline.dinner))
         ) {
           startDate.setDate(startDate.getDate() + 7 - lengthMaxId);
           quantity = lengthMaxId;
+          // console.log(quantity);
         } else {
           startDate.setDate(startDate.getDate() + 7 - lengthMax);
           quantity = lengthMax;
@@ -233,9 +233,9 @@ function App() {
       } else {
         if (
           day < 7 &&
-          ((id === 1 && hh > deadline.breakfast) ||
-            (id === 2 && hh > deadline.lunch) ||
-            (id === 3 && hh > deadline.dinner))
+          ((id === 1 && hh >= deadline.breakfast) ||
+            (id === 2 && hh >= deadline.lunch) ||
+            (id === 3 && hh >= deadline.dinner))
         ) {
           startDate.setDate(startDate.getDate() + lengthMaxId);
           quantity = lengthMaxId;
@@ -721,7 +721,7 @@ function App() {
   };
   return (
     <>
-      <Header token={token} lang={lang} setLang={setLang} />
+      <Header token={token} lang={lang} setLang={setLang} initLang={initLang} />
       {!modalClose && config.language && !token && <LoginModal lang={lang} />}
       {!token ? (
         <div className="center">
@@ -813,7 +813,6 @@ function App() {
           <div className="tables">
             {!loading ? (
               places.map((place, index) => {
-                // console.log("lengthMaxPlaces: ", lengthMax);
                 return isUnFolded[index] ? (
                   <div index={index} className="table">
                     <div className="table">
@@ -826,6 +825,7 @@ function App() {
                             id="dayName"
                             date={date}
                             week={week}
+                            init_week={init_week}
                             month={month}
                             place={place}
                             lang={lang}
@@ -834,6 +834,7 @@ function App() {
                             id="dayNum"
                             date={date}
                             week={week}
+                            init_week={init_week}
                             month={month}
                             place={place}
                             indexPlace={index}
@@ -865,6 +866,7 @@ function App() {
                                   id={id}
                                   date={date}
                                   week={week}
+                                  init_week={init_week}
                                   month={month}
                                   place={place}
                                   meals={meals}
@@ -897,11 +899,11 @@ function App() {
                                 month === mm &&
                                 week === init_week &&
                                 (day === 7 ||
-                                  day === lastWeekDay ||
+                                  // day === lastWeekDay ||
                                   (day === 6 &&
-                                    ((id === 1 && hh > deadline.breakfast) ||
-                                      (id === 2 && hh > deadline.lunch) ||
-                                      (id === 3 && hh > deadline.dinner))))
+                                    ((id === 1 && hh >= deadline.breakfast) ||
+                                      (id === 2 && hh >= deadline.lunch) ||
+                                      (id === 3 && hh >= deadline.dinner))))
                               ) && (
                                 <div id="chevron">
                                   <FontAwesomeIcon

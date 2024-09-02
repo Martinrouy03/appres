@@ -1,12 +1,14 @@
 import logo from "../assets/Logo.png";
 import { useDispatch, useSelector, shallowEqual } from "react-redux";
 import { logout, loguserBegin } from "../services/login/LoginActions";
-const Header = ({ token, lang, setLang }) => {
+const Header = ({ token, lang, setLang, initLang }) => {
   const dispatch = useDispatch();
   const config = useSelector(
     (state) => state.configurationReducer.configuration,
     shallowEqual
   );
+
+  const lang2 = initLang === "EN" ? "FR" : "EN";
   return (
     <header>
       <div className="container">
@@ -19,8 +21,8 @@ const Header = ({ token, lang, setLang }) => {
             setLang(e.target.value);
           }}
         >
-          <option value="FR">FR</option>
-          <option value="EN">EN</option>
+          <option value={initLang}>{initLang}</option>
+          <option value={lang2}>{lang2}</option>
         </select>
         {token ? (
           <button

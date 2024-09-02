@@ -54,9 +54,9 @@ export function adujstLengthMax(
   if (
     mm === month &&
     week === init_week &&
-    ((id === 1 && hh > deadline.breakfast) ||
-      (id === 2 && hh > deadline.lunch) ||
-      (id === 3 && hh > deadline.dinner))
+    ((id === 1 && hh >= deadline.breakfast) ||
+      (id === 2 && hh >= deadline.lunch) ||
+      (id === 3 && hh >= deadline.dinner))
   ) {
     lengthMax--;
     endDateCompensation = 1;
@@ -67,7 +67,7 @@ export function computeShift(mm, month, i, day, firstDay, week, init_week) {
   let shift = 0;
   if (mm === month) {
     shift = i - day + (week - init_week) * 7;
-    console.log(week, init_week, "shift: ", shift);
+    // console.log(week, init_week, "shift: ", shift);
   } else {
     shift = i - (firstDay || 7) + 1 + (week - 1) * 7;
   }
@@ -226,7 +226,7 @@ export const convertLinesToArray = (orderLines, codeRepas) => {
       }
     }
   });
-  console.log("functions: week: ", week);
+  // console.log("functions: week: ", week);
   return { meals: meals, disabledMeals: disabledMeals };
 };
 export const convertToUnix = (date) => {

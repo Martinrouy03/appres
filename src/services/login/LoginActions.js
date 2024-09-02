@@ -29,7 +29,7 @@ export function loguser(username, password) {
         localStorage.setItem("token", login.token);
         axios
           .get(
-            // fetch userId from username
+            // fetch email from username
             const_apiurl +
               `users?sortfield=t.rowid&sortorder=ASC&sqlfilters=t.lastname:=:'${username}'` +
               "&DOLAPIKEY=" +
@@ -41,6 +41,7 @@ export function loguser(username, password) {
             localStorage.setItem("userEmail", email);
             axios
               .get(
+                // fetch userId from email
                 const_apiurl +
                   "thirdparties/email/" +
                   email +

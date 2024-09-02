@@ -7,7 +7,7 @@ export function getConfiguration() {
 
     if (store.getState().configurationReducer.configuration !== "") return;
 
-    fetch("/configuration.json", {
+    fetch("configuration.json", {
       // cache: "no-store",
       headers: {
         Accept: "application/json",
