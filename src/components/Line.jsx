@@ -39,6 +39,7 @@ const Line = ({
     shallowEqual
   );
   const regimeColors = config.regimeColors;
+  const dolibarrMealCode = config.dolibarrMealCode;
   const regimes = useSelector(
     (state) => state.regimesReducer.regimes,
     shallowEqual
@@ -48,8 +49,8 @@ const Line = ({
   const mm = date.getMonth();
   const hh = date.getHours();
   const year = mm < month ? date.getFullYear() : date.getFullYear() + 1;
-  const newDate = new Date(year, month, 1);
-  const offset = newDate.getDay() || 7;
+  // const newDate = new Date(year, month, 1);
+  // const offset = newDate.getDay() || 7;
   const firstDay = mm === month ? date : new Date(year, month, 1); // //Jour J du mois actuel, et premier jour du mois suivant
   const lastDay = new Date(year, month + 1, 0); // Dernier jour du mois
   // const init_week = Math.ceil((date.getDate() + offset) / 7);
@@ -63,31 +64,38 @@ const Line = ({
     shiftMin = -1;
   }
   const handleCheckBox = (shift, id, date) => {
-    const selectedDate = date; // initialisation
+    // const selectedDate = date; // initialisation
+    const selectedDate = new Date(date);
+    const isDST = selectedDate.getTimezoneOffset() === -120; // heure d'été
+    // const adjustCET = isDST ? 3600000 : 0;
     selectedDate.setHours(0, 0, 0, 0);
     if (mm === month) {
       selectedDate.setDate(selectedDate.getDate() + shift); // date du jour + shift = selected date
     } else {
-      selectedDate.setDate(selectedDate.getDate() + shift - 1); // date du jour + shift = selected date
+      selectedDate.setDate(selectedDate.getDate() + shift - 1); // date du jour + shift -1 = selected date
     }
-    let selectedLines = [];
+    let selectedLines = []; // liste des lignes de commande correspondant à l'id de la ligne sélectionnée
     let count = 0;
     let mealObj = config.meal.filter((meal) => meal.code === id);
-    const mealLabel = mealObj[0].label;
+    // const mealLabel = mealObj[0].label;
     const mealCode = mealObj[0].code;
     const mealPrice = mealObj[0].price;
     selectedLines = order.lines.filter(
-      (line) => line.libelle === mealLabel || line.label === mealLabel
+      (line) => line.fk_product === String(config.dolibarrMealCode[id - 1]) //line.libelle === mealLabel || line.label === mealLabel
     );
+    console.log("// SELECTEDLINES// :", selectedLines);
 
     // ----- Mise à jour des lignes de commande ----- //
     selectedLines.map((line) => {
+      let isoDate;
       const dateDebut = new Date( // Récupère date de début de ligne avant modification
         moment.unix(line.array_options.options_lin_datedebut)
       );
+
       const dateFin = new Date( // Récupère date de fin de ligne avant modification
         moment.unix(line.array_options.options_lin_datefin)
       );
+
       let newLine = { ...line, array_options: { ...line.array_options } };
       let {
         options_lin_datedebut,
@@ -97,6 +105,16 @@ const Line = ({
       } = newLine.array_options;
       let qty = Number(line.qty);
 
+      console.log(
+        "\\ TEST // : selectedDate",
+        selectedDate.getTimezoneOffset()
+      ); // check l.174
+      console.log("\\ TEST // : selectedDate", selectedDate.getTime()); // check l.174
+      console.log("\\ TEST // : dateFin Offset", dateFin.getTimezoneOffset());
+      // console.log("\\ TEST // : dateFin", dateFin);
+      console.log("\\ TEST // : dateFin", dateFin.getTime() + dayToMs);
+      console.log("\\ TEST // : regimeId", regimeId);
+      console.log("\\ TEST // : place.rowid", place.rowid);
       if (
         // ----- SUPPRESSION de ligne de commande ---- //
         convertToUnix(selectedDate) === options_lin_datedebut &&
@@ -266,7 +284,7 @@ const Line = ({
               options_lin_datedebut: convertToUnix(selectedDate),
               options_lin_datefin: convertToUnix(selectedDate),
             },
-            fk_product: String(id + 1),
+            fk_product: dolibarrMealCode[id - 1],
             label: mealCode,
             qty: "1",
             subprice: mealPrice,

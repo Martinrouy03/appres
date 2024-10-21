@@ -9,7 +9,7 @@ export function loguser(username, password) {
     dispatch(loguserBegin());
 
     return axios
-      .get(
+      .post(
         const_apiurl +
           "login?login=" +
           username +

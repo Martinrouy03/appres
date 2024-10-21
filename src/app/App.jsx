@@ -1,4 +1,5 @@
 import { useState } from "react";
+import moment from "moment";
 // Icons
 import { library } from "@fortawesome/fontawesome-svg-core";
 import {
@@ -88,7 +89,7 @@ function App() {
   const hh = date.getHours();
 
   // State instantiations:
-  const [regimeId, setRegimeId] = useState("4");
+  const [regimeId, setRegimeId] = useState("1");
   const [commandNb, setCommandNb] = useState(0);
   const [month, setMonth] = useState(mm);
   const navLanguage = navigator.language || navigator.userLanguage;
@@ -155,7 +156,9 @@ function App() {
     meals: [],
     disabledMeals: [],
   };
-  result = order.lines ? convertLinesToArray(order.lines) : result;
+  result = order.lines
+    ? convertLinesToArray(order.lines, config.codeRepas)
+    : result;
   const meals = result.meals;
   const disabledMeals = result.disabledMeals;
   // console.log("App: week: ", week);
@@ -171,7 +174,7 @@ function App() {
       config.codeRepas &&
       dispatch(getOrder(userId, month, setCommandNb, token));
   }, [month, user, modalClose, config]);
-  // console.log("meals: ", meals);
+  // console.log("***** meals: ", meals);
   const handleWeekButtons = (id, month, week, place, suppress) => {
     const shift = computeShift(
       mm,
@@ -186,7 +189,6 @@ function App() {
     const mealLabel = mealObj[0].label;
     const mealCode = mealObj[0].code;
     const mealPrice = mealObj[0].price;
-    // console.log("lengthMax: ", lengthMax);
     const adjust = adujstLengthMax(
       mm,
       month,
@@ -198,39 +200,46 @@ function App() {
       config.deadline
     );
     const lengthMaxId = adjust.length;
-    // console.log("lengthMaxId: ", lengthMaxId);
     let quantity = lengthMaxId;
     if (mm === month && week === maxWeeks) {
       quantity = quantity - day;
     }
     const endDateCompensation = adjust.endDate;
     // Determine startDate and endDate:
-    let anteStartDate = computeDateShift(mm, month, year, shift - 1);
+    let anteStartDate = "";
+
+    anteStartDate = computeDateShift(mm, month, year, shift - 1);
     anteStartDate.setHours(0, 0, 0, 0);
     let startDate = computeDateShift(mm, month, year, shift);
     startDate.setHours(0, 0, 0, 0);
     let endDate = computeDateShift(mm, month, year, shift + 6);
     endDate.setHours(0, 0, 0, 0);
+    // let endDateAdjacent = computeDateShift(mm, month, year, shift + 6);
     let postEndDate = computeDateShift(mm, month, year, shift + 7);
     postEndDate.setHours(0, 0, 0, 0);
-    // console.log("week: ", week, "init_week: ", init_week);
+
+    // On détermine
+    // startDate: la date de début et
+    // quantity: la quantité de repas à enregistrer...
     if (mm === month && week === init_week) {
+      // Pour la semaine actuelle
       if (week !== maxWeeks) {
-        // console.log(id, hh, deadline.dinner);
+        // si la semaine actuelle n'est pas la dernière semaine du mois
         if (
           day < 7 &&
           ((id === 1 && hh >= deadline.breakfast) ||
             (id === 2 && hh >= deadline.lunch) ||
             (id === 3 && hh >= deadline.dinner))
         ) {
-          startDate.setDate(startDate.getDate() + 7 - lengthMaxId);
+          startDate.setDate(startDate.getDate() + 7 - lengthMaxId); //lengthMaxId
           quantity = lengthMaxId;
-          // console.log(quantity);
+          console.log("quantity: ", quantity);
         } else {
           startDate.setDate(startDate.getDate() + 7 - lengthMax);
           quantity = lengthMax;
         }
       } else {
+        // si la semaine actuelle est la dernière semaine du mois
         if (
           day < 7 &&
           ((id === 1 && hh >= deadline.breakfast) ||
@@ -244,36 +253,48 @@ function App() {
         }
       }
     } else if (week === 1) {
+      // Pour la première semaine des mois prochains
       startDate.setDate(startDate.getDate() + 7 - lengthMax);
     } else {
+      // Pour les autres semaines
       quantity = lengthMax;
     }
+    // On détermine
+    // endDate: la date de fin
     if (week === maxWeeks) {
       endDate.setDate(
         endDate.getDate() - 7 + lengthMaxId + endDateCompensation
       );
     }
     // Identify orderlines already existing within the selected week and id
+    let anteStartDateLine = [];
+    anteStartDateLine = order.lines.filter(
+      (line) =>
+        (line.libelle === mealLabel || line.label === mealLabel) &&
+        line.array_options.options_lin_datefin === convertToUnix(anteStartDate)
+    );
     let selectedLines = [];
-
     selectedLines = order.lines.filter(
       (line) =>
         (line.libelle === mealLabel || line.label === mealLabel) &&
         line.array_options.options_lin_datedebut >= convertToUnix(startDate) &&
         line.array_options.options_lin_datefin <= convertToUnix(endDate)
     );
+
     // Identify orderline already crossing the startDate,
     // or just the day before the desired week
     let anteLine = [];
     anteLine = order.lines.filter(
       (line) =>
-        (line.libelle === mealLabel || line.label === mealLabel) &&
+        line.fk_product === String(config.dolibarrMealCode[id - 1]) &&
+        // (line.libelle === mealLabel || line.label === mealLabel) &&
         line.array_options.options_lin_datedebut <=
           convertToUnix(anteStartDate) &&
         line.array_options.options_lin_datefin >=
           convertToUnix(anteStartDate) &&
         line.array_options.options_lin_datefin <= convertToUnix(endDate)
     );
+    // console.log("**** ANTELINE: ", anteLine);
 
     // Identify orderline already crossing the endDate,
     // or just the day after the desired week
@@ -553,7 +574,7 @@ function App() {
               options_lin_datedebut: convertToUnix(startDate),
               options_lin_datefin: convertToUnix(endDate),
             },
-            fk_product: String(id + 1),
+            fk_product: config.dolibarrMealCode[id - 1],
             label: mealCode,
             qty: quantity,
             subprice: mealPrice,
@@ -611,7 +632,7 @@ function App() {
               options_lin_datedebut: convertToUnix(startDate),
               options_lin_datefin: convertToUnix(endDate),
             },
-            fk_product: String(id + 1),
+            fk_product: config.dolibarrMealCode[id - 1],
             label: mealCode,
             qty: lengthMaxId,
             subprice: mealPrice,
@@ -669,7 +690,7 @@ function App() {
               options_lin_datedebut: convertToUnix(startDate),
               options_lin_datefin: convertToUnix(endDate),
             },
-            fk_product: String(id + 1),
+            fk_product: config.dolibarrMealCode[id - 1],
             label: mealCode,
             qty: lengthMaxId,
             subprice: mealPrice,
@@ -687,6 +708,70 @@ function App() {
             )
           );
         }
+        // } else if (selectedLines.length > 0) {
+        //   selectedLines.map((line) => {
+        //     dispatch(
+        //       removeOrderLine(order.id, line.id, order.socid, month, token)
+        //     );
+        //   });
+        // } else if (anteStartDateLine.length === 1) {
+        //ANTESTARTDATELINE
+        // console.log("ANTESTARTDATELINE");
+        // ANTESTARTDATELINE = {
+        //   ...anteLine[0],
+        //   array_options: { ...anteLine[0].array_options },
+        // };
+        // if (anteLine.array_options.options_lin_room === regimeId) {
+        //   const overflowingDays =
+        //     (anteLine.array_options.options_lin_datefin -
+        //       convertToUnix(anteStartDate)) /
+        //     (24 * 3600);
+        //   anteLine.array_options.options_lin_datefin = convertToUnix(endDate);
+        //   anteLine.qty = Number(anteLine.qty) + lengthMaxId - overflowingDays;
+        //   dispatch(
+        //     updateOrderLine(
+        //       anteLine.commande_id,
+        //       anteLine.id,
+        //       anteLine,
+        //       order.socid,
+        //       month,
+        //       token
+        //     )
+        //   );
+        // } else {
+        //   console.log("ANTELINE NEW REGIME");
+        //   const overflowingDays =
+        //     (anteLine.array_options.options_lin_datefin -
+        //       convertToUnix(anteStartDate)) /
+        //     (24 * 3600);
+        //   anteLine.array_options.options_lin_datefin =
+        //     convertToUnix(anteStartDate);
+        //   anteLine.qty = Number(anteLine.qty) - overflowingDays;
+        //   const newWeekLine = {
+        //     array_options: {
+        //       options_lin_room: regimeId,
+        //       options_lin_intakeplace: String(place.rowid),
+        //       options_lin_datedebut: convertToUnix(startDate),
+        //       options_lin_datefin: convertToUnix(endDate),
+        //     },
+        //     fk_product: String(id + 1),
+        //     label: mealCode,
+        //     qty: lengthMaxId,
+        //     subprice: mealPrice,
+        //     remise_percent: 0,
+        //   };
+        //   dispatch(
+        //     updateOrderLineandAddOrderline(
+        //       anteLine.commande_id,
+        //       anteLine.id,
+        //       anteLine,
+        //       month,
+        //       order,
+        //       newWeekLine,
+        //       token
+        //     )
+        //   );
+        // }
       } else {
         // Add week line
         dispatch(
@@ -700,7 +785,7 @@ function App() {
                 options_lin_datedebut: convertToUnix(startDate),
                 options_lin_datefin: convertToUnix(endDate),
               },
-              fk_product: String(id + 1),
+              fk_product: config.dolibarrMealCode[id - 1],
               label: mealCode,
               qty: quantity,
               subprice: mealPrice,
@@ -710,6 +795,7 @@ function App() {
           )
         );
       }
+      console.log("///// SELECTED LINES : ", selectedLines);
       if (selectedLines.length > 0) {
         selectedLines.map((line) => {
           dispatch(
@@ -853,7 +939,7 @@ function App() {
                           config.deadline
                         );
                         const lengthMaxId = adjust.length;
-                        // const endDateCompensation = adjust.endDate;
+                        // const endDateCompensation = adjust.endDateCompensation;
 
                         return (
                           <div key={id} className="line">

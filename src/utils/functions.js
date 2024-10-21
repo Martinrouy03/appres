@@ -184,14 +184,11 @@ export const convertLinesToArray = (orderLines, codeRepas) => {
       );
 
       const total = (dateFin - dateDebut) / (24 * 3600 * 1000) + 1; // nb de jours dans la commande
-      // console.log(total);
       // let mealCode = getMealCode(line.libelle) || getMealCode(line.label);
       let mealCode = config.meal.filter(
-        (meal) => meal.label === line.libelle || meal.label === line.label
+        (meal) => meal.code === line.libelle || String(meal.code) === line.label //meal.label
       );
-
       mealCode = mealCode[0].code;
-      // console.log("offset: ", offset);
       for (let i = 0; i < total; i++) {
         // boucle sur chaque jour de la commande
         const atomicDate = new Date(
